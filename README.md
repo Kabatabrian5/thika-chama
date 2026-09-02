@@ -294,3 +294,25 @@ npx expo start
 
 ## Important note about repository state
 The repository is connected to the GitHub remote above. Before making the next meaningful implementation change, review `docs/SPEC.md`, `docs/BUILD_ORDER.md`, and `docs/AI_HANDOFF.md`, then update the status documentation when the work is complete.
+
+## App Screens
+
+![App screen 1](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%281%29.jpeg)
+![App screen 2](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%282%29.jpeg)
+![App screen 3](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%283%29.jpeg)
+![App screen 4](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%284%29.jpeg)
+![App screen 5](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%285%29.jpeg)
+![App screen 6](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%286%29.jpeg)
+![App screen 7](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%287%29.jpeg)
+![App screen 8](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%288%29.jpeg)
+![App screen 9](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%289%29.jpeg)
+![App screen 10](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%2810%29.jpeg)
+![App screen 11](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%2811%29.jpeg)
+![App screen 12](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%2812%29.jpeg)
+![App screen 13](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%2813%29.jpeg)
+![App screen 14](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%2814%29.jpeg)
+![App screen 15](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%2815%29.jpeg)
+![App screen 16](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%2816%29.jpeg)
+![App screen 17](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%2817%29.jpeg)
+![App screen 18](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%2818%29.jpeg)
+![App screen 19](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52.jpeg)
