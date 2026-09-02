@@ -42,7 +42,8 @@
 - `eas.json` defines `development` (internal development client), `preview` (internal installable build), and `production` profiles.
 - Android application ID is `com.kabatabrian5.thikachama` in `app.json`.
 - The first EAS attempt used `npx eas`, which resolves the unrelated npm package `eas@0.1.0` and fails with "could not determine executable to run". Use the official package name `eas-cli` instead: `npx eas-cli@latest build --platform android --profile development`.
-- The official `eas-cli` download was slow in this Windows environment, so no Android build or APK link has been created yet.
+- `eas-cli@23.2.0` and `@sentry/core@10.73.0` are now installed as development dependencies; the missing-module error is fixed and `node_modules/.bin/eas.cmd --version` returns `eas-cli/23.2.0`.
+- The first local build attempt with the repaired CLI produced no output and was stopped before authentication or cloud build submission, so no Android build or APK link exists yet.
 - `react-dom` is pinned to `19.2.3` to match React `19.2.3`; leaving it as `^19.2.3` allowed npm to resolve `19.2.8` and caused a peer-dependency conflict during deployment.
 - Latest local verification: `node_modules/.bin/tsc.cmd --noEmit` passed and `npm run build` exported `dist` successfully.
 - If Vercel still reports an error, open the failed deployment and inspect the Build Logs. The screenshot alone does not contain the cause.
