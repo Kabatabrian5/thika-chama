@@ -4,7 +4,7 @@
 - GitHub: https://github.com/Kabatabrian5/thika-chama
 - Local workspace: `C:\projects\thika-chama`
 - Branch: `main`
-- Last known deployed code commit: `2a302c0` before the current handoff update
+- Last known deployed code commit: `0f07883` before the current handoff update
 - Product: Expo React Native app with an Expo web preview for a 15-member chama in Thika Road, Nairobi
 
 ## Read first
@@ -37,6 +37,8 @@
 - `vercel.json` serves the Expo web export and no longer rewrites traffic to the legacy API prototype.
 - `npm run build` was verified locally and exported `dist` successfully.
 - Expo SDK 57 requires Node `>=22.13.0`; this requirement is declared in `package.json` for Vercel.
+- Expo Go on the user's phone reported an SDK incompatibility with SDK 57, so the project is being downgraded to Expo SDK 54 (`expo ~54.0.37`, React `19.1.0`, React Native `0.81.5`).
+- The SDK 54 manifest and lockfile were updated, but Windows npm extraction is currently hanging while rebuilding `node_modules`; do not use the half-installed tree until `npm ci --legacy-peer-deps` completes successfully.
 - `react-dom` is pinned to `19.2.3` to match React `19.2.3`; leaving it as `^19.2.3` allowed npm to resolve `19.2.8` and caused a peer-dependency conflict during deployment.
 - Latest local verification: `node_modules/.bin/tsc.cmd --noEmit` passed and `npm run build` exported `dist` successfully.
 - If Vercel still reports an error, open the failed deployment and inspect the Build Logs. The screenshot alone does not contain the cause.
