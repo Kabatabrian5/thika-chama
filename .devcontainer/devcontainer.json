@@ -1,0 +1,36 @@
+{
+  // ============================================================
+  // DEVCONTAINER CONFIG — makes this repo "just work" in a
+  // GitHub Codespace with no local laptop/setup required.
+  // ============================================================
+  "name": "Thika Road Chama - Expo Dev",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+
+  // Ports Expo uses. 8081 = Metro bundler, 19000-19002 = legacy
+  // Expo dev tools/tunnel ports (kept for compatibility).
+  "forwardPorts": [8081, 19000, 19001, 19002],
+  "portsAttributes": {
+    "8081": {
+      "label": "Metro Bundler",
+      "onAutoForward": "notify"
+    }
+  },
+
+  // Runs once when the Codespace is created: installs deps and
+  // the Expo/EAS CLIs globally so `npx expo start` works instantly.
+  "postCreateCommand": "npm install && npm install -g eas-cli",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "expo.vscode-expo-tools"
+      ]
+    }
+  },
+
+  // Codespaces machines don't have a mobile screen — we preview
+  // via Expo Go on the phone (QR code) or the web build.
+  "remoteUser": "node"
+}
