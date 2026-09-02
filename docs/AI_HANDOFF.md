@@ -38,7 +38,9 @@
 - `npm run build` was verified locally and exported `dist` successfully.
 - Expo SDK 57 requires Node `>=22.13.0`; this requirement is declared in `package.json` for Vercel.
 - Expo Go on the user's phone reported an SDK incompatibility with SDK 57, so the project is being downgraded to Expo SDK 54 (`expo ~54.0.37`, React `19.1.0`, React Native `0.81.5`).
-- The SDK 54 manifest and lockfile were updated, but Windows npm extraction is currently hanging while rebuilding `node_modules`; do not use the half-installed tree until `npm ci --legacy-peer-deps` completes successfully.
+- The project now uses Expo SDK 57 again for the EAS development-build path. Expo Go is not the phone-testing target because the installed Expo Go version is incompatible with SDK 57.
+- `eas.json` defines `development` (internal development client), `preview` (internal installable build), and `production` profiles.
+- Android application ID is `com.kabatabrian5.thikachama` in `app.json`.
 - `react-dom` is pinned to `19.2.3` to match React `19.2.3`; leaving it as `^19.2.3` allowed npm to resolve `19.2.8` and caused a peer-dependency conflict during deployment.
 - Latest local verification: `node_modules/.bin/tsc.cmd --noEmit` passed and `npm run build` exported `dist` successfully.
 - If Vercel still reports an error, open the failed deployment and inspect the Build Logs. The screenshot alone does not contain the cause.
@@ -72,8 +74,19 @@ They are reference material for the UI. Copy only approved assets into `assets/`
 - Run `npm run build` after web/deployment changes.
 - Do not claim a deployment or test succeeded without fresh command output.
 
+## Phone testing path
+Use an EAS development build instead of Expo Go:
+
+```bash
+npx eas login
+npx eas build:configure
+npx eas build --platform android --profile development
+```
+
+Install the resulting APK on the Android phone. Later code changes can be tested with the development server and development client. EAS requires the user to authenticate with their Expo account before the cloud build.
+
 ## Next action
-After Vercel preview is working, implement Step 4 and Step 5 in order:
+After the EAS phone build is working, implement Step 4 and Step 5 in order:
 1. Add contributions/fines/transactions schema and RLS migration.
 2. Add server-only Daraja validation and confirmation Edge Functions.
 3. Test idempotency and phone lookup with Daraja simulator payloads.
