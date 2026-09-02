@@ -47,6 +47,87 @@ The app has a working foundation for the auth flow and navigation:
 
 The project is now at Step 3 of 11 and is not yet complete for the full chama workflow.
 
+## Complete project progress
+
+### Starting point
+
+The project began as an Expo TypeScript mobile app for the 15-member Thika Road Chama Group in Nairobi. The agreed product rules were captured in `docs/SPEC.md` before implementation:
+
+- KES 2,500 weekly contribution: KES 2,000 savings and KES 500 welfare
+- Thursday 12:00 PM EAT payment deadline
+- KES 400 automatic fine after a missed deadline
+- Manual M-Pesa Paybill payments read through Daraja C2B
+- No STK Push payments
+- Bank records remain the final authority for money
+
+### Completed Step 1-2: Project foundation and authentication
+
+- Created the Expo SDK 57 React Native TypeScript project.
+- Added the shared Supabase client with AsyncStorage session persistence.
+- Added Kenyan phone normalization to the canonical `254XXXXXXXXX` format.
+- Added the `profiles` table migration with roles, account statuses, timestamps, and RLS policies.
+- Built the registration form with validation for name, email, phone, national ID, and password.
+- Built the six-digit email verification screen with auto-focus, paste support, resend cooldown, and Supabase OTP verification.
+- Built the chairman approval waiting screen.
+- Built login with profile-status routing.
+- Added strict status handling:
+    - `PENDING_EMAIL` -> Verify Email
+    - `PENDING_APPROVAL` -> Waiting for Chairman Approval
+    - `ACTIVE` -> Main application
+    - `REJECTED` -> remains outside the main application
+- Added root navigation that checks the Supabase session and profile status before granting dashboard access.
+
+### Completed Step 3: Dashboard and Members
+
+- Replaced the temporary dashboard placeholder with the profile-backed Dashboard screen.
+- Added the bottom-tab navigation contract: Dashboard, Members, Contribute, Loans, Profile.
+- Added the Dashboard welcome state and Thursday contribution deadline information.
+- Added clearly marked pending financial summary cards instead of inventing balances before the financial schema exists.
+- Added the read-only Members directory with profile loading, alphabetical ordering, member count, and name search.
+- Added temporary empty views for Contribute, Loans, and Profile until their build-order steps are implemented.
+
+### Deployment and phone testing preparation
+
+- Connected the repository to `https://github.com/Kabatabrian5/thika-chama`.
+- Configured Vercel to export the Expo web preview to `dist`.
+- Added EAS Android development, preview, and production profiles.
+- Linked the app to the Expo EAS project under the `briankabatas-team` account.
+- Installed `expo-dev-client` for the development APK.
+- Aligned the Expo slug with the linked EAS project (`chama`). The visible app name remains `thika-chama` and the Android package remains `com.kabatabrian5.thikachama`.
+- Generated and stored the Android signing keystore through Expo.
+- Submitted the Android development build to EAS. The current build is queued on the free tier; it is a test/development APK, not the final production release. Build page: https://expo.dev/accounts/briankabatas-team/projects/chama/builds/d196355f-b9b4-4920-a691-8048fb05a602
+
+### Verification completed
+
+- `node_modules/.bin/tsc.cmd --noEmit` passed.
+- `npm run build` passed and exported the web app to `dist`.
+- EAS accepted the Android build upload and created a build page. The APK download link will appear when the build status becomes `Finished`.
+
+### Not yet completed
+
+The following work has not been implemented yet:
+
+- Contributions, fines, transactions, loans, receipts, credits, settings, and audit-table migrations
+- Daraja validation and confirmation Edge Functions
+- Payment allocation waterfall and idempotency handling
+- Reading-mode Contribute screen and realtime payment receipt flow
+- Thursday deadline cron and fine SMS notifications
+- Loan requests, chairman loan approvals, and immutable loan audit records
+- Profile editing, receipt exports, chairman administration, and treasurer tools
+- 2FA, loan-edit PIN protection, daily backups, webhook retry handling, and final RLS review
+- Production APK release
+
+### Current blockers and manual setup
+
+- A real Supabase project still needs to be created or connected, the `profiles` migration needs to be run, and the email OTP/RLS settings need to be configured as described in `docs/SUPABASE_SETUP.md`.
+- App-side Supabase values must be placed in `.env` as `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
+- Daraja and other server credentials must remain Supabase Edge Function secrets and are intentionally not part of the current phone build.
+- Expo Go is not the phone-testing target for SDK 57. Use the EAS development APK and development client instead.
+
+## Exact continuation point
+
+The project is currently at **Step 3 of 11**. The immediate user-facing task is to finish the queued EAS development build and install its APK on an Android phone. After phone installation is confirmed, continue with **Step 4** by adding the financial tables and RLS migration, followed by the server-only Daraja webhook functions. Do not start Daraja implementation until the phone testing path is working.
+
 ## Tech stack
 - Expo SDK 57 / React Native 0.86
 - TypeScript
@@ -96,7 +177,8 @@ The project is now at Step 3 of 11 and is not yet complete for the full chama wo
 │   │   │   ├── VerifyEmailScreen.tsx
 │   │   │   └── WaitingApprovalScreen.tsx
 │   │   └── main/
-│   │       └── DashboardPlaceholder.tsx
+│   │       ├── DashboardScreen.tsx
+│   │       └── MembersScreen.tsx
 │   └── types/
 │       └── index.ts
 └── supabase/
@@ -181,11 +263,7 @@ npx expo start --tunnel
 - Do not invent logic that is not written in `docs/SPEC.md`.
 
 ## Build order to continue from here
-The project is currently at Step 2 of 11 in the build order. The next major step is:
-
-- Step 3: Dashboard + Members (read-only)
-
-The full tracked checklist is in `docs/BUILD_ORDER.md`.
+The live checklist and status notes are maintained in `docs/BUILD_ORDER.md`.
 
 ## Security and money handling notes
 The app must never be treated as the final authority on money movement. The real money lives in the bank Paybill account, while the app mirrors what Safaricom sends back through Daraja. This project intentionally follows a read-confirmation model, not a push-payment model.
@@ -214,5 +292,5 @@ cp .env.example .env
 npx expo start
 ```
 
-## Important note about repo URL
-Because this workspace clone does not yet have a GitHub remote configured, the actual GitHub URL must be added before sharing or pushing the repo. Until then, the local repo path is the only reliable identifier.
+## Important note about repository state
+The repository is connected to the GitHub remote above. Before making the next meaningful implementation change, review `docs/SPEC.md`, `docs/BUILD_ORDER.md`, and `docs/AI_HANDOFF.md`, then update the status documentation when the work is complete.

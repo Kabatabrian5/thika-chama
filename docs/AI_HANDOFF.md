@@ -41,6 +41,7 @@
 - The project now uses Expo SDK 57 again for the EAS development-build path. Expo Go is not the phone-testing target because the installed Expo Go version is incompatible with SDK 57.
 - `eas.json` defines `development` (internal development client), `preview` (internal installable build), and `production` profiles.
 - Android application ID is `com.kabatabrian5.thikachama` in `app.json`.
+- EAS project ID is `b4e90820-f27c-48ee-9b1e-9eefbb0be9a5`; it is linked directly under `expo.extra.eas.projectId` in `app.json` because the interactive `eas init` process became stuck after browser authentication.
 - The first EAS attempt used `npx eas`, which resolves the unrelated npm package `eas@0.1.0` and fails with "could not determine executable to run". Use the official package name `eas-cli` instead: `npx eas-cli@latest build --platform android --profile development`.
 - `eas-cli@23.2.0` and `@sentry/core@10.73.0` are now installed as development dependencies; the missing-module error is fixed and `node_modules/.bin/eas.cmd --version` returns `eas-cli/23.2.0`.
 - The first local build attempt with the repaired CLI produced no output and was stopped before authentication or cloud build submission, so no Android build or APK link exists yet.
