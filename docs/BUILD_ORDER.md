@@ -19,12 +19,16 @@ where things stand in under a minute.
   manual step for you to do with your own Supabase account, since
   it needs your credentials.
 
-- [ ] **Step 3: Dashboard + Members (read-only)**
+- [x] **Step 3: Dashboard + Members (read-only)**
   Bottom tab nav: Dashboard | Members | Contribute | Loans | Profile.
   Dashboard cards: Total Savings, My Fines, Welfare, Group Savings
   (chairman), Thursday countdown, Pay Now, Recent Transactions,
   Overdue Members (chairman only). Members list with paid/pending
   status, search, filter.
+  Status notes (2026-09-02): Added the bottom-tab navigation contract,
+  live profile-backed Dashboard screen, and read-only Members directory
+  with name search. Financial totals remain clearly pending until the
+  contributions migration is implemented in Step 4-5.
 
 - [ ] **Step 4: Edge Functions — mpesa-validation, mpesa-confirmation**
   Daraja C2B webhook handlers. Allocation logic: Fine → Weekly

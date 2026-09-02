@@ -1,29 +1,46 @@
 /**
  * ============================================================
- * MAIN NAVIGATOR (stub)
+ * MAIN NAVIGATOR
  * ============================================================
- * Shown only to ACTIVE members. Right now this just renders the
- * placeholder dashboard so the auth flow is fully testable.
- *
- * STEP 3 TODO: replace this with a bottom-tab navigator:
- *   Dashboard | Members | Contribute | Loans | Profile
- * (see docs/BUILD_ORDER.md)
+ * This is the navigation boundary for ACTIVE members. The tabs
+ * are introduced in Step 3 so every later feature has a stable
+ * place to live without changing the auth/status gate.
  * ============================================================
  */
 import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import DashboardPlaceholder from '../screens/main/DashboardPlaceholder';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import DashboardScreen from '../screens/main/DashboardScreen';
+import MembersScreen from '../screens/main/MembersScreen';
+import { colors } from '../lib/theme';
 
-export type MainStackParamList = {
+export type MainTabParamList = {
   Dashboard: undefined;
+  Members: undefined;
+  Contribute: undefined;
+  Loans: undefined;
+  Profile: undefined;
 };
 
-const Stack = createNativeStackNavigator<MainStackParamList>();
+const Tabs = createBottomTabNavigator<MainTabParamList>();
 
 export default function MainNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Dashboard" component={DashboardPlaceholder} />
-    </Stack.Navigator>
+    <Tabs.Navigator initialRouteName="Dashboard" screenOptions={{
+      headerShown: false,
+      tabBarActiveTintColor: colors.primary,
+      tabBarInactiveTintColor: colors.textMuted,
+    }}>
+      <Tabs.Screen name="Dashboard" component={DashboardScreen} />
+      <Tabs.Screen name="Members" component={MembersScreen} />
+      <Tabs.Screen name="Contribute" component={ComingSoonScreen} />
+      <Tabs.Screen name="Loans" component={ComingSoonScreen} />
+      <Tabs.Screen name="Profile" component={ComingSoonScreen} />
+    </Tabs.Navigator>
   );
+}
+
+// These tabs establish the final navigation contract; each feature
+// screen will replace this temporary view in its build-order step.
+function ComingSoonScreen() {
+  return null;
 }

@@ -43,9 +43,9 @@ The app has a working foundation for the auth flow and navigation:
 - Supabase client configured
 - Auth screens built: Register, Verify Email, Waiting for Chairman Approval, Login
 - Root navigation checks session + profile status before showing dashboard access
-- Dashboard placeholder exists while Step 3 is still pending
+- Dashboard and read-only Members directory are implemented as Step 3
 
-This means the project is at the early auth stage, not yet complete for the full chama workflow.
+The project is now at Step 3 of 11 and is not yet complete for the full chama workflow.
 
 ## Tech stack
 - Expo SDK 57 / React Native 0.86
