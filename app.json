@@ -21,6 +21,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b4e90820-f27c-48ee-9b1e-9eefbb0be9a5"
+      }
+    },
+    "owner": "briankabatas-team"
   }
 }
