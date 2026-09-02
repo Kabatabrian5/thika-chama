@@ -5,17 +5,16 @@ A React Native / Expo mobile app for a 15-member Nairobi chama. The app is built
 This repository is intended to be easy to hand off to another AI or developer without requiring guesswork.
 
 ## GitHub repo status
-This clone does not currently have a configured Git remote. The repository itself is named `thika-chama` locally, but the exact GitHub URL still needs to be added.
+This repository is now connected to the live GitHub repo:
 
-Set it with:
+https://github.com/Kabatabrian5/thika-chama
+
+Use this remote in all handoff notes and deployment scripts. If you clone the repo fresh, run:
 
 ```bash
-git remote add origin https://github.com/<your-username>/thika-chama.git
-git branch -M main
-git push -u origin main
+git clone https://github.com/Kabatabrian5/thika-chama.git
+cd thika-chama
 ```
-
-If the repo is already on GitHub under another path, replace the URL above with the real one and keep that exact URL in the handoff notes and deployment docs.
 
 ## Project purpose
 - Chama name: Thika Road Chama Group

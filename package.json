@@ -1,14 +1,14 @@
 {
-<<<<<<< HEAD
-  "name": "chama-app",
-  "version": "1.0.0",
-  "dependencies": {
-    "express": "^4.19.2"
-  }
-=======
   "name": "thika-chama",
   "version": "1.0.0",
   "main": "index.ts",
+  "private": true,
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^3.1.1",
     "@react-navigation/native": "^7.3.18",
@@ -25,13 +25,5 @@
   "devDependencies": {
     "@types/react": "~19.2.2",
     "typescript": "~6.0.3"
-  },
-  "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
-  },
-  "private": true
->>>>>>> 02195c3 (Initial project scaffold and auth flow)
+  }
 }
