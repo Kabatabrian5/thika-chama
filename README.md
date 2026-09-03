@@ -316,3 +316,72 @@ The repository is connected to the GitHub remote above. Before making the next m
 ![App screen 17](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%2817%29.jpeg)
 ![App screen 18](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52%20%2818%29.jpeg)
 ![App screen 19](docs/screenshots/WhatsApp%20Image%202026-09-02%20at%2010.27.52.jpeg)
+## Latest handoff update: 2026-09-02
+
+The project is currently at Step 3 of 11. Steps 1-3 are complete:
+
+- Expo SDK 57 React Native TypeScript app
+- Supabase client and profiles migration
+- Register, email OTP verification, chairman approval waiting, and login screens
+- Status-based access control
+- Dashboard screen
+- Read-only Members directory with search
+- Bottom navigation for Dashboard, Members, Contribute, Loans, and Profile
+
+Daraja implementation has intentionally not started yet. The immediate goal is to install the app on an Android phone first.
+
+### EAS phone build status
+
+An Expo account was created/logged into successfully using `npx eas-cli`.
+
+The project is linked to:
+
+- Expo account/team: `briankabatas-team`
+- EAS project: `chama`
+- Android package: `com.kabatabrian5.thikachama`
+- EAS project ID: `b4e90820-f27c-48ee-9b1e-9eefbb0be9a5`
+
+`expo-dev-client` was installed successfully. The Expo slug was corrected from `thika-chama` to `chama` because it needed to match the linked EAS project.
+
+The development build was submitted with:
+
+```powershell
+npx eas-cli@latest build --platform android --profile development
+Build page:
+
+https://expo.dev/accounts/briankabatas-team/projects/chama/builds/d196355f-b9b4-4920-a691-8048fb05a602
+
+The build waited in the free queue for approximately one hour, then failed during the Android build. No APK download link was produced. The next AI should open the EAS build page and inspect the expanded build logs to identify the exact failure before retrying.
+
+The build is a development/test APK, not the final production APK.
+
+Important next actions
+Inspect the failed EAS build logs and fix the build error.
+Retry the development Android build.
+Wait for the build to finish.
+Download and install the APK on the Android phone.
+Confirm that the app opens and test the current authentication/navigation flow.
+Do not begin Daraja work until phone testing is working.
+After phone installation is confirmed, continue with Step 4:
+Add contributions, fines, and transactions migrations.
+Add RLS policies.
+Implement server-only Daraja validation and confirmation Edge Functions.
+Test allocation and idempotency.
+Keep the production APK for the end of the project, after payments, loans, receipts, permissions, and security are complete.
+Verification already completed
+These commands passed before the EAS build attempt:
+The web build exported successfully to dist.
+
+Environment reminders
+The real Supabase project still needs to be created/configured manually. The .env file must contain:
+
+
+Never place service-role, Daraja, SMS, or email provider secrets in the Expo app bundle.
+Use the following documents as the source of truth:
+
+docs/SPEC.md
+docs/BUILD_ORDER.md
+docs/SUPABASE_SETUP.md
+docs/AI_HANDOFF.md
+README.md
+
