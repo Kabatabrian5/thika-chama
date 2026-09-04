@@ -91,6 +91,9 @@ where things stand in under a minute.
   screen to match the supplied mobile reference and pass the verified email
   into the confirmation message.
 
+  Follow-up (2026-09-04): Added inline success/error feedback for chairman
+  member actions and migration 0006 to harden the management RPC role check.
+
 - [ ] **Step 4: Edge Functions — mpesa-validation, mpesa-confirmation**
   Daraja C2B webhook handlers. Allocation logic: Fine → Weekly
   (2000 savings + 500 welfare) → Loan → Overdue/Advance. Test via

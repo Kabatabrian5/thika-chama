@@ -1,9 +1,8 @@
 -- ============================================================
--- MIGRATION 0004: protected chairman member management
+-- MIGRATION 0006: harden member-management role checks
 -- ============================================================
--- The public app can request these actions, but only an existing
--- chairman or treasurer may execute them. Auth users are deleted
--- server-side so the service-role key never reaches the client.
+-- Keep the RPC fail-closed if the caller has no profile or role.
+-- This forward migration updates projects where 0004 is installed.
 -- ============================================================
 
 create or replace function public.manage_member(target_user_id uuid, action text)

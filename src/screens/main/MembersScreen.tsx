@@ -21,6 +21,8 @@ export default function MembersScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [currentUserId, setCurrentUserId] = useState('');
   const [currentRole, setCurrentRole] = useState('member');
+  const [actionMessage, setActionMessage] = useState('');
+  const [actionError, setActionError] = useState('');
 
   async function loadMembers(isRefresh = false) {
     if (isRefresh) setRefreshing(true);
@@ -55,6 +57,8 @@ export default function MembersScreen() {
 
   async function manageMember(member: Member, action: 'approve' | 'reject' | 'delete') {
     const labels = { approve: 'approve', reject: 'reject', delete: 'remove' };
+    setActionMessage('');
+    setActionError('');
     Alert.alert(`${labels[action].charAt(0).toUpperCase()}${labels[action].slice(1)} member`, `Are you sure you want to ${labels[action]} ${member.full_name}?`, [
       { text: 'Cancel', style: 'cancel' },
       {
@@ -66,10 +70,12 @@ export default function MembersScreen() {
             action,
           });
           if (error) {
+            setActionError(error.message);
             Alert.alert('Action failed', error.message);
             return;
           }
           await loadMembers(true);
+          setActionMessage(`${member.full_name} was ${action === 'delete' ? 'removed' : `${action}d`}.`);
         },
       },
     ]);
@@ -86,6 +92,8 @@ export default function MembersScreen() {
         <Text style={styles.title}>Members</Text>
         <Text style={styles.subtitle}>{members.length || 15} member directory</Text>
         <TextInput style={styles.search} value={search} onChangeText={setSearch} placeholder="Search members" placeholderTextColor={colors.textMuted} />
+        {actionError ? <Text style={styles.errorText}>{actionError}</Text> : null}
+        {actionMessage ? <Text style={styles.successText}>{actionMessage}</Text> : null}
       </View>
 
       {loading ? <ActivityIndicator style={styles.loader} color={colors.primary} /> : <FlatList
@@ -142,6 +150,8 @@ const styles = StyleSheet.create({
   rejectButton: { backgroundColor: '#FFF4E5', borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 5 },
   deleteButton: { backgroundColor: '#FFF0F0', borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 5 },
   actionText: { color: colors.primaryDark, fontSize: 11, fontWeight: '800' },
+  errorText: { backgroundColor: '#FFF0F0', borderColor: '#F3B5B5', borderRadius: radius.sm, borderWidth: 1, color: colors.danger, fontSize: 13, marginTop: spacing.sm, padding: spacing.sm },
+  successText: { backgroundColor: colors.primaryLight, borderColor: '#B4D5B0', borderRadius: radius.sm, borderWidth: 1, color: colors.primaryDark, fontSize: 13, marginTop: spacing.sm, padding: spacing.sm },
   loader: { marginTop: spacing.xl },
   empty: { color: colors.textMuted, padding: spacing.lg, textAlign: 'center' },
 });

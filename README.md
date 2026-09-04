@@ -389,6 +389,11 @@ The repository is connected to the GitHub remote above. Before making the next m
 - The verified email is now passed into the approval screen and shown in the confirmation message.
 - Verified with `node_modules/.bin/tsc.cmd --noEmit` and `git diff --check` before deployment.
 
+### 2026-09-04 — Member action feedback
+- Members management now renders approve/reject/remove success and RPC error messages inline on web instead of relying only on `Alert.alert`.
+- Added migration `0006_harden_member_management.sql` so the management RPC fails closed when the caller has no valid chairman or treasurer role.
+- Run migration 0006 in Supabase before testing the chairman action buttons again.
+
 ### 2026-09-03 — Opening screen
 - Added the branded opening screen for signed-out visitors with the Thika Road Chama Group name, community handshake visual, member count, and login/register actions.
 - Made the opening screen the first route in the existing auth navigator; active sessions still go directly through the existing profile-status gate.
