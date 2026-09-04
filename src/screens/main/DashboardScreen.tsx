@@ -2,17 +2,23 @@
  * ============================================================
  * MEMBER DASHBOARD
  * ============================================================
- * Step 3 establishes the information hierarchy for an ACTIVE
- * member. Financial totals stay pending until the contributions
- * migration exists; the client must never fabricate balances.
+ * Mobile-first home surface for active chama members. Financial
+ * values remain pending until the contributions schema is live;
+ * the layout still mirrors the intended product experience.
  * ============================================================
  */
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { supabase } from '../../lib/supabase';
 import { colors, radius, spacing } from '../../lib/theme';
+import type { MainTabParamList } from '../../navigation/MainNavigator';
 
-export default function DashboardScreen() {
+type Props = BottomTabScreenProps<MainTabParamList, 'Dashboard'>;
+
+type CardTone = 'green' | 'mint' | 'coral' | 'rose';
+
+export default function DashboardScreen({ navigation }: Props) {
   const [memberName, setMemberName] = useState('Member');
   const [loading, setLoading] = useState(true);
 
@@ -26,7 +32,12 @@ export default function DashboardScreen() {
         return;
       }
 
-      const { data } = await supabase.from('profiles').select('full_name').eq('id', userData.user.id).single();
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', userData.user.id)
+        .single();
+
       if (mounted) {
         setMemberName(data?.full_name ?? 'Member');
         setLoading(false);
@@ -38,61 +49,127 @@ export default function DashboardScreen() {
   }, []);
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <Text style={styles.eyebrow}>THIKA ROAD CHAMA GROUP</Text>
-      <Text style={styles.title}>Welcome, {loading ? '...' : memberName}</Text>
-      <Text style={styles.subtitle}>Your weekly savings at a glance</Text>
+    <ScrollView style={styles.screen} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <View style={styles.topBar}>
+        <View>
+          <Text style={styles.brand}>THIKA ROAD CHAMA GROUP</Text>
+          <Text style={styles.title}>Welcome, {loading ? '...' : memberName}</Text>
+          <Text style={styles.subtitle}>Your weekly savings at a glance</Text>
+        </View>
+        <View style={styles.profileDot}><Text style={styles.profileInitial}>{memberName.charAt(0).toUpperCase()}</Text></View>
+      </View>
 
-      <View style={styles.deadlineCard}>
-        <Text style={styles.deadlineLabel}>NEXT CONTRIBUTION DEADLINE</Text>
-        <Text style={styles.deadlineValue}>Thursday, 12:00 PM EAT</Text>
-        <Text style={styles.deadlineHint}>Weekly contribution: KES 2,500</Text>
+      <View style={styles.welcomeBand}>
+        <View>
+          <Text style={styles.bandEyebrow}>WELCOME BACK</Text>
+          <Text style={styles.bandName}>{loading ? 'Loading profile...' : memberName}</Text>
+        </View>
+        <Text style={styles.bandLeaf}>⌁</Text>
       </View>
 
       <View style={styles.cardsGrid}>
-        <SummaryCard label="Total Savings" value="Pending" color={colors.success} />
-        <SummaryCard label="My Fines" value="Pending" color={colors.danger} />
-        <SummaryCard label="Welfare" value="Pending" color="#2D6CDF" />
-        <SummaryCard label="Group Savings" value="Pending" color={colors.primaryDark} />
+        <SummaryCard label="My Total Savings" value="Pending" tone="green" icon="◉" />
+        <SummaryCard label="My Loan Balance" value="Pending" tone="mint" icon="▣" />
+        <SummaryCard label="My Fines" value="Pending" tone="coral" icon="!" note="Payment data pending" />
+        <SummaryCard label="Welfare" value="Pending" tone="rose" icon="♡" note="Health fund" />
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Recent transactions</Text>
-        <View style={styles.emptyState}>
-          {loading ? <ActivityIndicator color={colors.primary} /> : <Text style={styles.emptyTitle}>No transactions yet</Text>}
-          <Text style={styles.emptyBody}>Payment history will appear after the contributions table is connected.</Text>
-        </View>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Thursday Contribution</Text>
+        <Text style={styles.sectionMeta}>KES 2,500 weekly</Text>
+      </View>
+      <View style={styles.contributionCard}>
+        <ContributionState icon="✓" label="Status" value="Awaiting payment data" tone="paid" />
+        <View style={styles.divider} />
+        <ContributionState icon="◷" label="Deadline" value="Thursday, 12:00 PM EAT" tone="pending" />
+      </View>
+
+      <Text style={[styles.sectionTitle, styles.quickTitle]}>Quick Actions</Text>
+      <View style={styles.quickActions}>
+        <QuickAction icon="＋" label="Contribute Now" filled onPress={() => navigation.navigate('Contribute')} />
+        <QuickAction icon="▤" label="Request Loan" onPress={() => navigation.navigate('Loans')} />
+        <QuickAction icon="▥" label="My Receipts" onPress={() => navigation.navigate('Profile')} />
+      </View>
+
+      <View style={styles.recentHeader}>
+        <Text style={styles.sectionTitle}>Recent Transactions</Text>
+        <Text style={styles.pendingCaption}>Coming soon</Text>
+      </View>
+      <View style={styles.emptyState}>
+        {loading ? <ActivityIndicator color={colors.primary} /> : <Text style={styles.emptyTitle}>No transactions yet</Text>}
+        <Text style={styles.emptyBody}>Confirmed M-Pesa payments will appear here.</Text>
       </View>
     </ScrollView>
   );
 }
 
-function SummaryCard({ label, value, color }: { label: string; value: string; color: string }) {
-  return <View style={styles.summaryCard}>
-    <View style={[styles.cardAccent, { backgroundColor: color }]} />
-    <Text style={styles.cardLabel}>{label}</Text>
-    <Text style={styles.cardValue}>{value}</Text>
-  </View>;
+function SummaryCard({ label, value, icon, tone, note }: { label: string; value: string; icon: string; tone: CardTone; note?: string }) {
+  return (
+    <View style={[styles.summaryCard, styles[`card_${tone}`]]}>
+      <View style={styles.cardTop}><View style={styles.cardIcon}><Text style={styles.cardIconText}>{icon}</Text></View><Text style={styles.cardArrow}>›</Text></View>
+      <Text style={styles.cardLabel}>{label}</Text>
+      <Text style={styles.cardValue}>{value}</Text>
+      {note ? <Text style={styles.cardNote}>{note}</Text> : null}
+    </View>
+  );
+}
+
+function ContributionState({ icon, label, value, tone }: { icon: string; label: string; value: string; tone: 'paid' | 'pending' }) {
+  return <View style={styles.contributionState}><View style={[styles.stateIcon, tone === 'pending' && styles.stateIconPending]}><Text style={styles.stateIconText}>{icon}</Text></View><View><Text style={styles.stateLabel}>{label}</Text><Text style={styles.stateValue}>{value}</Text></View></View>;
+}
+
+function QuickAction({ icon, label, filled, onPress }: { icon: string; label: string; filled?: boolean; onPress: () => void }) {
+  return <Pressable onPress={onPress} style={[styles.quickAction, filled && styles.quickActionFilled]}><Text style={[styles.quickIcon, filled && styles.quickIconFilled]}>{icon}</Text><Text style={[styles.quickLabel, filled && styles.quickLabelFilled]}>{label}</Text></Pressable>;
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.lg, paddingTop: 56, paddingBottom: spacing.xl },
-  eyebrow: { color: colors.primary, fontSize: 12, fontWeight: '800', letterSpacing: 1 },
-  title: { color: colors.text, fontSize: 28, fontWeight: '800', marginTop: spacing.xs },
-  subtitle: { color: colors.textMuted, marginTop: spacing.xs },
-  deadlineCard: { backgroundColor: colors.primary, borderRadius: radius.md, padding: spacing.md, marginTop: spacing.lg },
-  deadlineLabel: { color: '#CDEBD8', fontSize: 11, fontWeight: '800' },
-  deadlineValue: { color: colors.white, fontSize: 20, fontWeight: '800', marginTop: spacing.xs },
-  deadlineHint: { color: '#E8F5EC', marginTop: spacing.xs },
+  screen: { backgroundColor: '#F4F8F5', flex: 1 },
+  content: { alignSelf: 'center', maxWidth: 760, padding: spacing.lg, paddingBottom: 36, width: '100%' },
+  topBar: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
+  brand: { color: colors.primary, fontSize: 13, fontWeight: '900', letterSpacing: 1.2 },
+  title: { color: colors.text, fontSize: 31, fontWeight: '900', marginTop: spacing.sm },
+  subtitle: { color: colors.textMuted, fontSize: 16, marginTop: spacing.xs },
+  profileDot: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 24, height: 48, justifyContent: 'center', marginLeft: spacing.sm, width: 48 },
+  profileInitial: { color: colors.white, fontSize: 20, fontWeight: '900' },
+  welcomeBand: { alignItems: 'center', backgroundColor: '#DDF3DD', borderRadius: radius.lg, flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.lg, padding: spacing.md },
+  bandEyebrow: { color: '#5A7A64', fontSize: 11, fontWeight: '800', letterSpacing: 0.8 },
+  bandName: { color: colors.primaryDark, fontSize: 19, fontWeight: '900', marginTop: 2 },
+  bandLeaf: { color: colors.primary, fontSize: 42, fontWeight: '300', transform: [{ rotate: '-35deg' }] },
   cardsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginTop: spacing.md },
-  summaryCard: { backgroundColor: colors.white, borderRadius: radius.sm, padding: spacing.md, width: '48%', minHeight: 112, position: 'relative', overflow: 'hidden' },
-  cardAccent: { height: 4, left: 0, position: 'absolute', right: 0, top: 0 },
-  cardLabel: { color: colors.textMuted, fontSize: 13, marginTop: spacing.xs },
-  cardValue: { color: colors.text, fontSize: 20, fontWeight: '800', marginTop: spacing.sm },
-  section: { marginTop: spacing.lg },
-  sectionTitle: { color: colors.text, fontSize: 18, fontWeight: '800' },
-  emptyState: { alignItems: 'center', backgroundColor: colors.white, borderRadius: radius.sm, marginTop: spacing.sm, padding: spacing.lg },
-  emptyTitle: { color: colors.text, fontWeight: '700' },
-  emptyBody: { color: colors.textMuted, marginTop: spacing.xs, textAlign: 'center' },
+  summaryCard: { borderRadius: radius.lg, minHeight: 152, padding: spacing.md, width: 'calc(50% - 4px)' as any },
+  card_green: { backgroundColor: '#BFF3B7' },
+  card_mint: { backgroundColor: '#D9F4F0' },
+  card_coral: { backgroundColor: '#FFD4D0' },
+  card_rose: { backgroundColor: '#F8C9D0' },
+  cardTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
+  cardIcon: { alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.42)', borderRadius: 18, height: 34, justifyContent: 'center', width: 34 },
+  cardIconText: { color: colors.primaryDark, fontSize: 17, fontWeight: '900' },
+  cardArrow: { color: 'rgba(10,77,37,0.55)', fontSize: 27, fontWeight: '300' },
+  cardLabel: { color: '#496352', fontSize: 13, marginTop: spacing.md },
+  cardValue: { color: colors.primaryDark, fontSize: 22, fontWeight: '900', marginTop: spacing.xs },
+  cardNote: { color: '#8D3940', fontSize: 11, marginTop: spacing.xs },
+  sectionHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.lg },
+  sectionTitle: { color: colors.primaryDark, fontSize: 18, fontWeight: '900' },
+  sectionMeta: { color: colors.textMuted, fontSize: 12 },
+  contributionCard: { alignItems: 'center', backgroundColor: colors.white, borderColor: '#C8DED0', borderRadius: radius.lg, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-around', marginTop: spacing.sm, padding: spacing.md },
+  contributionState: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: spacing.sm },
+  stateIcon: { alignItems: 'center', backgroundColor: colors.success, borderRadius: 18, height: 36, justifyContent: 'center', width: 36 },
+  stateIconPending: { backgroundColor: '#FFE19A' },
+  stateIconText: { color: colors.white, fontSize: 20, fontWeight: '900' },
+  stateLabel: { color: colors.textMuted, fontSize: 11 },
+  stateValue: { color: colors.text, fontSize: 12, fontWeight: '800', marginTop: 2 },
+  divider: { backgroundColor: '#DCE9E0', height: 42, width: 1 },
+  quickTitle: { marginTop: spacing.lg },
+  quickActions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
+  quickAction: { alignItems: 'center', backgroundColor: colors.white, borderColor: colors.primary, borderRadius: radius.md, borderWidth: 1.5, flex: 1, minHeight: 88, justifyContent: 'center', padding: spacing.sm },
+  quickActionFilled: { backgroundColor: colors.primary, borderColor: colors.primary },
+  quickIcon: { color: colors.primary, fontSize: 25, fontWeight: '700' },
+  quickIconFilled: { color: colors.white },
+  quickLabel: { color: colors.primaryDark, fontSize: 12, fontWeight: '800', marginTop: spacing.xs, textAlign: 'center' },
+  quickLabelFilled: { color: colors.white },
+  recentHeader: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.lg },
+  pendingCaption: { color: colors.textMuted, fontSize: 12 },
+  emptyState: { alignItems: 'center', backgroundColor: colors.white, borderRadius: radius.lg, marginTop: spacing.sm, padding: spacing.lg },
+  emptyTitle: { color: colors.text, fontWeight: '800' },
+  emptyBody: { color: colors.textMuted, fontSize: 13, marginTop: spacing.xs, textAlign: 'center' },
 });

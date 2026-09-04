@@ -432,6 +432,12 @@ The repository is connected to the GitHub remote above. Before making the next m
 - Added migration `0006_harden_member_management.sql` so the management RPC fails closed when the caller has no valid chairman or treasurer role.
 - Run migration 0006 in Supabase before testing the chairman action buttons again.
 
+### 2026-09-04 — Dashboard visual redesign
+- Rebuilt `DashboardScreen.tsx` around the supplied mobile reference: branded welcome header, member identity card, colored savings/loan/fine/welfare tiles, Thursday contribution status, quick actions, and recent transactions section.
+- Replaced generic bottom-tab indicators with meaningful dashboard, members, contribute, loans, and profile icons.
+- Kept all financial amounts marked `Pending` until the financial schema is implemented; quick actions now point to the corresponding tabs.
+- Verified with `node_modules/.bin/tsc.cmd --noEmit`.
+
 ### 2026-09-03 — Opening screen
 - Added the branded opening screen for signed-out visitors with the Thika Road Chama Group name, community handshake visual, member count, and login/register actions.
 - Made the opening screen the first route in the existing auth navigator; active sessions still go directly through the existing profile-status gate.

@@ -94,6 +94,10 @@ where things stand in under a minute.
   Follow-up (2026-09-04): Added inline success/error feedback for chairman
   member actions and migration 0006 to harden the management RPC role check.
 
+  Follow-up (2026-09-04): Rebuilt the dashboard to match the supplied
+  mobile reference and replaced generic tab indicators with meaningful
+  icons. Financial values remain pending until Step 4+ schema work.
+
   Deferred-process ledger (2026-09-04): Development was advanced with
   manual SQL for first-chairman bootstrap, test-user deletion, and stuck
   profile status repair. Migrations 0003-0006 exist in the repository but

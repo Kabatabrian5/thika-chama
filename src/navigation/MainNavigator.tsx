@@ -8,6 +8,7 @@
  * ============================================================
  */
 import React from 'react';
+import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import DashboardScreen from '../screens/main/DashboardScreen';
 import MembersScreen from '../screens/main/MembersScreen';
@@ -29,14 +30,20 @@ export default function MainNavigator() {
       headerShown: false,
       tabBarActiveTintColor: colors.primary,
       tabBarInactiveTintColor: colors.textMuted,
+        tabBarStyle: { borderTopColor: '#DCE9E0', height: 68, paddingBottom: 8, paddingTop: 6 },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
     }}>
-      <Tabs.Screen name="Dashboard" component={DashboardScreen} />
-      <Tabs.Screen name="Members" component={MembersScreen} />
-      <Tabs.Screen name="Contribute" component={ComingSoonScreen} />
-      <Tabs.Screen name="Loans" component={ComingSoonScreen} />
-      <Tabs.Screen name="Profile" component={ComingSoonScreen} />
+      <Tabs.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarIcon: ({ color }) => <TabIcon glyph="⌂" color={color} /> }} />
+      <Tabs.Screen name="Members" component={MembersScreen} options={{ tabBarIcon: ({ color }) => <TabIcon glyph="♧" color={color} /> }} />
+      <Tabs.Screen name="Contribute" component={ComingSoonScreen} options={{ tabBarIcon: ({ color }) => <TabIcon glyph="＋" color={color} /> }} />
+      <Tabs.Screen name="Loans" component={ComingSoonScreen} options={{ tabBarIcon: ({ color }) => <TabIcon glyph="▤" color={color} /> }} />
+      <Tabs.Screen name="Profile" component={ComingSoonScreen} options={{ tabBarIcon: ({ color }) => <TabIcon glyph="●" color={color} /> }} />
     </Tabs.Navigator>
   );
+}
+
+function TabIcon({ glyph, color }: { glyph: string; color: string }) {
+  return <Text style={{ color, fontSize: 22, fontWeight: '700', lineHeight: 24 }}>{glyph}</Text>;
 }
 
 // These tabs establish the final navigation contract; each feature
