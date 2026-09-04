@@ -74,6 +74,30 @@ export default function MembersScreen() {
             Alert.alert('Action failed', error.message);
             return;
           }
+
+          const { data: updatedMember, error: verificationError } = await supabase
+            .from('profiles')
+            .select('status')
+            .eq('id', member.id)
+            .single();
+
+          if (verificationError) {
+            setActionError(`The action completed, but the updated member could not be verified: ${verificationError.message}`);
+            await loadMembers(true);
+            return;
+          }
+
+          if (action === 'approve' && updatedMember.status !== 'ACTIVE') {
+            setActionError(`Approval did not change ${member.full_name} to ACTIVE. Apply migrations 0004 and 0006 in Supabase, then try again.`);
+            await loadMembers(true);
+            return;
+          }
+
+          setMembers((currentMembers) => currentMembers.map((currentMember) => (
+            currentMember.id === member.id
+              ? { ...currentMember, status: action === 'approve' ? 'ACTIVE' : action === 'reject' ? 'REJECTED' : currentMember.status }
+              : currentMember
+          )));
           await loadMembers(true);
           setActionMessage(`${member.full_name} was ${action === 'delete' ? 'removed' : `${action}d`}.`);
         },
@@ -116,7 +140,7 @@ export default function MembersScreen() {
                 {item.status === 'PENDING_APPROVAL' ? <>
                   <TouchableOpacity onPress={() => manageMember(item, 'approve')} style={styles.approveButton}><Text style={styles.actionText}>Approve</Text></TouchableOpacity>
                   <TouchableOpacity onPress={() => manageMember(item, 'reject')} style={styles.rejectButton}><Text style={styles.actionText}>Reject</Text></TouchableOpacity>
-                </> : null}
+                </> : item.status === 'ACTIVE' ? <Text style={styles.approvedText}>Approved</Text> : null}
                 <TouchableOpacity onPress={() => manageMember(item, 'delete')} style={styles.deleteButton}><Text style={styles.actionText}>Remove</Text></TouchableOpacity>
               </View>
             ) : null}
@@ -150,6 +174,7 @@ const styles = StyleSheet.create({
   rejectButton: { backgroundColor: '#FFF4E5', borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 5 },
   deleteButton: { backgroundColor: '#FFF0F0', borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 5 },
   actionText: { color: colors.primaryDark, fontSize: 11, fontWeight: '800' },
+  approvedText: { color: colors.success, fontSize: 11, fontWeight: '800', marginTop: spacing.xs },
   errorText: { backgroundColor: '#FFF0F0', borderColor: '#F3B5B5', borderRadius: radius.sm, borderWidth: 1, color: colors.danger, fontSize: 13, marginTop: spacing.sm, padding: spacing.sm },
   successText: { backgroundColor: colors.primaryLight, borderColor: '#B4D5B0', borderRadius: radius.sm, borderWidth: 1, color: colors.primaryDark, fontSize: 13, marginTop: spacing.sm, padding: spacing.sm },
   loader: { marginTop: spacing.xl },

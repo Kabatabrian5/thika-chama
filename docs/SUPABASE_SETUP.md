@@ -9,9 +9,29 @@ flow will work. Do these in order.
   → put these in your `.env` as `EXPO_PUBLIC_SUPABASE_URL` /
   `EXPO_PUBLIC_SUPABASE_ANON_KEY` (copy `.env.example` → `.env` first)
 
-## 2. Run the migration
-- SQL Editor → paste the contents of `supabase/migrations/0001_init_profiles.sql` → Run
-- (Later migrations for contributions/loans/fines/etc will be added the same way as we build those steps)
+## 2. Run the profile migrations in order
+- SQL Editor → run each file in `supabase/migrations` in numeric order:
+  `0001_init_profiles.sql`, `0002_profile_signup_trigger.sql`,
+  `0003_complete_email_verification.sql`, `0004_chairman_member_management.sql`,
+  `0005_allow_protected_email_transition.sql`, `0006_harden_member_management.sql`,
+  and `0007_profile_avatars_storage.sql`.
+- `0002_profile_signup_trigger.sql` is required before registration can work.
+  It creates the `profiles` row when Supabase creates `auth.users`; without it,
+  signup may fail with the generic `Database error saving new user` message.
+- If a migration was already run, do not paste it again blindly. Check the
+  migration history or run the file's statements individually as appropriate.
+
+To verify the registration trigger exists, run this in the SQL Editor:
+
+```sql
+select tgname
+from pg_trigger
+where tgrelid = 'auth.users'::regclass
+  and tgname = 'on_auth_user_created';
+```
+
+It should return one row. If it returns no rows, run
+`0002_profile_signup_trigger.sql` after confirming `0001` created `profiles`.
 
 ## 3. Switch email verification to a 6-digit CODE, not a link
 This is **not** the default. By default Supabase sends a magic link.

@@ -83,6 +83,9 @@ export default function WaitingApprovalScreen({ navigation, route }: Props) {
         <TouchableOpacity style={styles.button} onPress={handleBackToLogin}>
           <Text style={styles.buttonText}>Back to Login</Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.secondaryButton} onPress={handleBackToLogin}>
+          <Text style={styles.secondaryButtonText}>Check Approval Status</Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -168,4 +171,6 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   buttonText: { color: colors.primary, fontWeight: '700', fontSize: 16 },
+  secondaryButton: { alignItems: 'center', marginTop: spacing.md, paddingVertical: spacing.sm },
+  secondaryButtonText: { color: colors.primaryDark, fontSize: 14, fontWeight: '700' },
 });

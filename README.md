@@ -172,9 +172,10 @@ production release:
     Vercel Git integration is connected to `Kabatabrian5/thika-chama` with
     `main` as the production branch before relying on automatic deploys.
 
-When resuming, start by applying and verifying migrations 0003-0006 in
+When resuming, start by applying and verifying migrations 0003-0007 in
 Supabase, then test registration -> OTP -> pending approval -> chairman
-approve/reject/remove without manual SQL. Only after that resume Step 4.
+approve/reject/remove and profile avatar upload without manual SQL. Only
+after that resume Step 4.
 
 ## Exact continuation point
 
@@ -471,7 +472,7 @@ The repository is connected to the GitHub remote above. Before making the next m
 - Photo selection/storage remains deferred until the storage and image-picker step.
 - Verified with `node_modules/.bin/tsc.cmd --noEmit`, `npm run build`, and `git diff --check`.
 
-### 2026-09-04 — Profile avatar storage and image picker
+### 2026-09-05 — Profile avatar storage and image picker
 - Installed Expo SDK 57-compatible `expo-image-picker` and configured its permissions through `app.json`.
 - Profile photo selection now crops a square image, uploads it to the private Supabase `avatars` bucket, stores the object path in `profiles.avatar_url`, and displays a one-hour signed URL.
 - Added `supabase/migrations/0007_profile_avatars_storage.sql` with per-user storage policies. Run it in the live Supabase SQL Editor before testing uploads.

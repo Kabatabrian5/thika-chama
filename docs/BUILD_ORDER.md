@@ -107,7 +107,7 @@ where things stand in under a minute.
 
   Deferred-process ledger (2026-09-04): Development was advanced with
   manual SQL for first-chairman bootstrap, test-user deletion, and stuck
-  profile status repair. Migrations 0003-0006 exist in the repository but
+  profile status repair. Migrations 0003-0007 exist in the repository but
   still require live Supabase application and end-to-end verification.
   Approval, rejection, removal, email delivery, and trigger behavior must
   be retested without SQL before this auth/admin slice is considered done.
@@ -145,9 +145,8 @@ where things stand in under a minute.
 - [ ] **Step 8: Profile, Edit Profile, My Receipts (email/export)**
   Status notes (2026-09-04): Profile/Edit Profile interface is now wired
   locally in `ProfileScreen.tsx`. Name/phone save and logout work against
-  the current schema; avatar storage, password change, receipts, and
-  exports remain pending.
-  Follow-up (2026-09-04): Added Expo ImagePicker integration and private
+  the current schema; password change, receipts, and exports remain pending.
+  Follow-up (2026-09-05): Added Expo ImagePicker integration and private
   Supabase `avatars` storage with per-user policies in migration 0007.
   Run migration 0007 before upload testing; native permission changes need
   a new EAS build.

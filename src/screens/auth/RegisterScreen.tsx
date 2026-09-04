@@ -209,6 +209,10 @@ function getRegistrationErrorMessage(error: any): string {
     return 'An account with this email, phone number, or ID already exists. Please log in instead.';
   }
 
+  if (searchableMessage.includes('database error saving new user')) {
+    return 'Registration could not create your member profile. Ask the administrator to run the Supabase migrations in order, especially 0002_profile_signup_trigger.sql, then try again.';
+  }
+
   return rawMessage || 'Something went wrong. Please try again shortly.';
 }
 
