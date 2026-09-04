@@ -77,6 +77,11 @@ where things stand in under a minute.
   guidance to log in, and stale confirmed-profile recovery. Refined the
   visual treatment of both auth forms.
 
+  Follow-up (2026-09-04): Fixed the post-OTP status error by moving the
+  member's allowed `PENDING_EMAIL` to `PENDING_APPROVAL` transition into
+  protected RPC `complete_email_verification`. Migration 0003 must be run
+  in Supabase before the live flow can use the repair.
+
 - [ ] **Step 4: Edge Functions — mpesa-validation, mpesa-confirmation**
   Daraja C2B webhook handlers. Allocation logic: Fine → Weekly
   (2000 savings + 500 welfare) → Loan → Overdue/Advance. Test via

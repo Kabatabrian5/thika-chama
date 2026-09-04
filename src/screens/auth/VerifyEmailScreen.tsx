@@ -121,10 +121,7 @@ export default function VerifyEmailScreen({ route, navigation }: Props) {
       } = await supabase.auth.getUser();
 
       if (user) {
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ status: 'PENDING_APPROVAL' })
-          .eq('id', user.id);
+        const { error: updateError } = await supabase.rpc('complete_email_verification');
         if (updateError) throw updateError;
       }
 

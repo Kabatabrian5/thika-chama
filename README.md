@@ -368,6 +368,11 @@ The repository is connected to the GitHub remote above. Before making the next m
 - Refined Register and Login styling with branded headers, elevated form surfaces, clearer labels, and stronger primary actions.
 - Verified with `node_modules/.bin/tsc.cmd --noEmit`, `npm run build`, and `git diff --check`.
 
+### 2026-09-04 — Email verification status transition
+- Fixed the post-OTP error where ordinary members saw `Only chairman or treasurer may change role or status`.
+- Verification now calls the protected `complete_email_verification` RPC for the single allowed `PENDING_EMAIL` to `PENDING_APPROVAL` transition.
+- Added `supabase/migrations/0003_complete_email_verification.sql`; this migration must be run in the live Supabase SQL Editor before testing the confirmation flow again.
+
 ### 2026-09-03 — Opening screen
 - Added the branded opening screen for signed-out visitors with the Thika Road Chama Group name, community handshake visual, member count, and login/register actions.
 - Made the opening screen the first route in the existing auth navigator; active sessions still go directly through the existing profile-status gate.
