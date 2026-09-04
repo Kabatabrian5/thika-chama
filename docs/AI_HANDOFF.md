@@ -18,7 +18,7 @@
 - Steps 1-2: complete. Expo scaffold, Supabase client, auth screens, profile status routing, and RLS profile migration exist.
 - Step 3: complete. Bottom tabs, profile-backed Dashboard, and read-only Members directory with search exist.
 - Step 4+: pending. Contributions, Daraja webhooks, allocation waterfall, fines, loans, receipts, and role administration are not complete.
-- The Contribute, Loans, and Profile tabs currently use temporary empty views until their build-order steps.
+- The Contribute tab now has a local uncommitted reading-mode interface in `ContributeScreen.tsx`; live payment confirmation and receipts are not implemented yet. Loans and Profile still use temporary empty views.
 - Signed-out visitors now land on `WelcomeScreen.tsx`, which links to the existing Login and Register screens.
 - `LoginScreen.tsx` now matches the supplied reference layout with branded header, community mark, field controls, remember-me row, and register footer.
 - Login uses a fixed flex layout rather than a page `ScrollView`; the complete form was verified at `390x844` with no document scrolling.
@@ -38,6 +38,8 @@
 - `DashboardScreen.tsx` now follows the supplied mobile reference with a welcome identity band, colored summary tiles, contribution status, quick actions, and recent transactions. Values remain pending until the financial schema exists; `MainNavigator.tsx` now supplies meaningful tab icons.
 - Dashboard countdown now updates every second toward the next Thursday 12:00 PM EAT deadline. Only Fines uses danger coloring; savings, loan, and welfare tiles use calm non-danger treatments.
 - On narrow screens, the Thursday Contribution status and countdown now stack vertically to prevent overlap; wide screens remain side-by-side.
+- Jenga documentation was reviewed: use Jenga Account Balance/Mini-Statement/Full Statement/Account Alerts later for Equity reconciliation, especially non-M-Pesa deposits. Keep Daraja as the provisional M-Pesa confirmation path and do not implement Jenga transfers or STK Push.
+- The latest pushed commit is `5912014`; a subsequent manual Vercel CLI deployment returned `Not authorized`, so verify the Vercel Git integration before assuming every GitHub push deploys.
 - Development has used temporary manual SQL shortcuts for first-chairman bootstrap, deleting test users, and repairing stuck statuses. Treat those as deferred work, not completed product behavior. Before production, apply and verify migrations 0003-0006 in the live Supabase project and complete registration -> OTP -> pending approval -> chairman approve/reject/remove without SQL.
 - Signup verification remains six-digit OTP-based in the app; Supabase must use OTP length `6`, expiry `600` seconds, and `{{ .Token }}` in the Confirm signup template instead of `{{ .ConfirmationURL }}`.
 - Supabase Email provider settings have been confirmed in the dashboard: `Email OTP expiration = 600` seconds and `Email OTP length = 6` digits. These values are configured under Authentication -> Providers -> Email, not inside the email template.

@@ -123,6 +123,16 @@ where things stand in under a minute.
   Static Paybill/Account instructions + Copy buttons, realtime
   polling of `contributions` table via Supabase Realtime, Success
   Receipt screen with PDF generation.
+  Status notes (2026-09-04): A local uncommitted reading-mode interface
+  now exists in `ContributeScreen.tsx` and is wired into the tab. It is
+  not complete: live Paybill details, copy actions, bank/Jenga/Daraja
+  confirmation, realtime records, and receipts remain pending.
+
+  Architecture note (2026-09-04): Jenga account services are reserved
+  for Equity account reconciliation, including non-M-Pesa transfers.
+  Daraja remains the provisional M-Pesa confirmation channel. The app
+  must not add Jenga STK Push or bank-transfer sending because the locked
+  product spec requires manual payment.
 
 - [ ] **Step 6: Thursday 12pm cron + fine SMS**
   `pg_cron` job to insert fines at the deadline, Edge Function

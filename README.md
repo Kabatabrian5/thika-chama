@@ -84,7 +84,8 @@ The project began as an Expo TypeScript mobile app for the 15-member Thika Road 
 - Added the Dashboard welcome state and Thursday contribution deadline information.
 - Added clearly marked pending financial summary cards instead of inventing balances before the financial schema exists.
 - Added the read-only Members directory with profile loading, alphabetical ordering, member count, and name search.
-- Added temporary empty views for Contribute, Loans, and Profile until their build-order steps are implemented.
+- Added a reading-mode Contribute screen locally with manual payment instructions, weekly allocation preview, linked-phone placeholder, polling-status placeholder, and fine/loan notice. It is still uncommitted and not yet connected to live payment records.
+- Loans and Profile remain temporary empty views until their build-order steps are implemented.
 
 ### Deployment and phone testing preparation
 
@@ -160,6 +161,15 @@ production release:
 - **Client delivery:** Vercel is the live web preview. A standalone EAS
     preview/production APK and update strategy still need to be prepared
     after the core workflow is stable.
+- **Bank integration decision:** Jenga account services are a future bank
+    reconciliation source for Equity transfers and non-M-Pesa deposits.
+    Daraja remains the fast M-Pesa confirmation channel until Jenga account
+    statement/alert access is provisioned and tested. Do not add Jenga
+    transfer or STK Push code; the locked spec requires manual payment.
+- **Deployment follow-up:** commit `5912014` is on GitHub, but a later
+    manual Vercel CLI deployment returned `Not authorized`. Confirm the
+    Vercel Git integration is connected to `Kabatabrian5/thika-chama` with
+    `main` as the production branch before relying on automatic deploys.
 
 When resuming, start by applying and verifying migrations 0003-0006 in
 Supabase, then test registration -> OTP -> pending approval -> chairman
@@ -448,6 +458,11 @@ The repository is connected to the GitHub remote above. Before making the next m
 - Fixed the narrow-screen Thursday Contribution panel so status and deadline countdown stack vertically instead of overlapping.
 - Wider layouts retain the side-by-side presentation.
 - Verified with `node_modules/.bin/tsc.cmd --noEmit`, `npm run build`, and `git diff --check`.
+
+### 2026-09-04 — Contribute interface in progress
+- Added the local reading-mode `ContributeScreen.tsx` and wired it into the Contribute tab.
+- The interface includes Paybill instructions, KES 2,500 allocation preview, linked-phone placeholder, five-second polling placeholder, and fine/loan notice.
+- This screen is intentionally not marked complete: Paybill details, bank/Jenga/Daraja confirmation, realtime records, and receipts still need implementation.
 
 ### 2026-09-03 — Opening screen
 - Added the branded opening screen for signed-out visitors with the Thika Road Chama Group name, community handshake visual, member count, and login/register actions.
