@@ -444,6 +444,11 @@ The repository is connected to the GitHub remote above. Before making the next m
 - Reserved coral/red danger styling for the Fines card; Savings, Loan Balance, and Welfare use non-danger green/mint treatments.
 - Verified with `node_modules/.bin/tsc.cmd --noEmit`, `npm run build`, and `git diff --check`.
 
+### 2026-09-04 — Mobile contribution panel spacing
+- Fixed the narrow-screen Thursday Contribution panel so status and deadline countdown stack vertically instead of overlapping.
+- Wider layouts retain the side-by-side presentation.
+- Verified with `node_modules/.bin/tsc.cmd --noEmit`, `npm run build`, and `git diff --check`.
+
 ### 2026-09-03 — Opening screen
 - Added the branded opening screen for signed-out visitors with the Thika Road Chama Group name, community handshake visual, member count, and login/register actions.
 - Made the opening screen the first route in the existing auth navigator; active sessions still go directly through the existing profile-status gate.

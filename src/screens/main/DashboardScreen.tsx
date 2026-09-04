@@ -8,7 +8,7 @@
  * ============================================================
  */
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { supabase } from '../../lib/supabase';
 import { colors, radius, spacing } from '../../lib/theme';
@@ -59,6 +59,8 @@ export default function DashboardScreen({ navigation }: Props) {
   const [memberName, setMemberName] = useState('Member');
   const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState<Countdown>(getCountdown);
+  const { width } = useWindowDimensions();
+  const compactLayout = width < 520;
 
   useEffect(() => {
     let mounted = true;
@@ -119,9 +121,9 @@ export default function DashboardScreen({ navigation }: Props) {
         <Text style={styles.sectionTitle}>Thursday Contribution</Text>
         <Text style={styles.sectionMeta}>KES 2,500 weekly</Text>
       </View>
-      <View style={styles.contributionCard}>
+      <View style={[styles.contributionCard, compactLayout && styles.contributionCardCompact]}>
         <ContributionState icon="✓" label="Status" value="Awaiting payment data" tone="paid" />
-        <View style={styles.divider} />
+        <View style={[styles.divider, compactLayout && styles.dividerCompact]} />
         <View style={styles.countdownBlock}>
           <Text style={styles.stateLabel}>TIME TO DEADLINE</Text>
           <Text style={styles.countdownValue}>{countdown.days}d {twoDigits(countdown.hours)}:{twoDigits(countdown.minutes)}:{twoDigits(countdown.seconds)}</Text>
@@ -198,15 +200,17 @@ const styles = StyleSheet.create({
   sectionTitle: { color: colors.primaryDark, fontSize: 18, fontWeight: '900' },
   sectionMeta: { color: colors.textMuted, fontSize: 12 },
   contributionCard: { alignItems: 'center', backgroundColor: colors.white, borderColor: '#C8DED0', borderRadius: radius.lg, borderWidth: 1, flexDirection: 'row', justifyContent: 'space-around', marginTop: spacing.sm, padding: spacing.md },
-  contributionState: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: spacing.sm },
+  contributionCardCompact: { alignItems: 'stretch', flexDirection: 'column', padding: spacing.lg },
+  contributionState: { alignItems: 'center', flex: 1, flexDirection: 'row', gap: spacing.sm, minWidth: 0 },
   stateIcon: { alignItems: 'center', backgroundColor: colors.success, borderRadius: 18, height: 36, justifyContent: 'center', width: 36 },
   stateIconPending: { backgroundColor: '#FFE19A' },
   stateIconText: { color: colors.white, fontSize: 20, fontWeight: '900' },
   stateLabel: { color: colors.textMuted, fontSize: 11 },
   stateValue: { color: colors.text, fontSize: 12, fontWeight: '800', marginTop: 2 },
-  countdownBlock: { flex: 1 },
+  countdownBlock: { flex: 1, minWidth: 0 },
   countdownValue: { color: colors.primaryDark, fontSize: 17, fontWeight: '900', marginTop: 2 },
   divider: { backgroundColor: '#DCE9E0', height: 42, width: 1 },
+  dividerCompact: { height: 1, marginVertical: spacing.md, width: '100%' },
   quickTitle: { marginTop: spacing.lg },
   quickActions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
   quickAction: { alignItems: 'center', backgroundColor: colors.white, borderColor: colors.primary, borderRadius: radius.md, borderWidth: 1.5, flex: 1, minHeight: 88, justifyContent: 'center', padding: spacing.sm },

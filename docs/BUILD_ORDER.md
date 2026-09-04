@@ -102,6 +102,9 @@ where things stand in under a minute.
   added a live days/hours/minutes/seconds countdown to Thursday 12:00 PM
   EAT, and limited red danger styling to the Fines card.
 
+  Follow-up (2026-09-04): Fixed the mobile contribution panel so the
+  status and deadline countdown stack cleanly without overlap.
+
   Deferred-process ledger (2026-09-04): Development was advanced with
   manual SQL for first-chairman bootstrap, test-user deletion, and stuck
   profile status repair. Migrations 0003-0006 exist in the repository but
