@@ -8,7 +8,7 @@
  * ============================================================
  */
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { colors, radius, spacing } from '../../lib/theme';
 
@@ -59,12 +59,7 @@ export default function MembersScreen() {
     const labels = { approve: 'approve', reject: 'reject', delete: 'remove' };
     setActionMessage('');
     setActionError('');
-    Alert.alert(`${labels[action].charAt(0).toUpperCase()}${labels[action].slice(1)} member`, `Are you sure you want to ${labels[action]} ${member.full_name}?`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: labels[action].charAt(0).toUpperCase() + labels[action].slice(1),
-        style: action === 'delete' || action === 'reject' ? 'destructive' : 'default',
-        onPress: async () => {
+    const runAction = async () => {
           const { error } = await supabase.rpc('manage_member', {
             target_user_id: member.id,
             action,
@@ -100,7 +95,21 @@ export default function MembersScreen() {
           )));
           await loadMembers(true);
           setActionMessage(`${member.full_name} was ${action === 'delete' ? 'removed' : `${action}d`}.`);
-        },
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm(`Are you sure you want to ${labels[action]} ${member.full_name}?`)) {
+        await runAction();
+      }
+      return;
+    }
+
+    Alert.alert(`${labels[action].charAt(0).toUpperCase()}${labels[action].slice(1)} member`, `Are you sure you want to ${labels[action]} ${member.full_name}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: labels[action].charAt(0).toUpperCase() + labels[action].slice(1),
+        style: action === 'delete' || action === 'reject' ? 'destructive' : 'default',
+        onPress: runAction,
       },
     ]);
   }
