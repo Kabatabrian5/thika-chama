@@ -98,6 +98,10 @@ where things stand in under a minute.
   mobile reference and replaced generic tab indicators with meaningful
   icons. Financial values remain pending until Step 4+ schema work.
 
+  Follow-up (2026-09-04): Refined dashboard spacing and hierarchy again,
+  added a live days/hours/minutes/seconds countdown to Thursday 12:00 PM
+  EAT, and limited red danger styling to the Fines card.
+
   Deferred-process ledger (2026-09-04): Development was advanced with
   manual SQL for first-chairman bootstrap, test-user deletion, and stuck
   profile status repair. Migrations 0003-0006 exist in the repository but

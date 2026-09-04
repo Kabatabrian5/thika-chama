@@ -438,6 +438,12 @@ The repository is connected to the GitHub remote above. Before making the next m
 - Kept all financial amounts marked `Pending` until the financial schema is implemented; quick actions now point to the corresponding tabs.
 - Verified with `node_modules/.bin/tsc.cmd --noEmit`.
 
+### 2026-09-04 — Dashboard reference refinement and deadline timer
+- Tightened the dashboard composition to the supplied mobile reference with a compact two-line chama header, profile marker, welcome band, compact cards, contribution panel, and quick actions.
+- Added a live countdown showing days, hours, minutes, and seconds until the next Thursday 12:00 PM EAT deadline.
+- Reserved coral/red danger styling for the Fines card; Savings, Loan Balance, and Welfare use non-danger green/mint treatments.
+- Verified with `node_modules/.bin/tsc.cmd --noEmit`, `npm run build`, and `git diff --check`.
+
 ### 2026-09-03 — Opening screen
 - Added the branded opening screen for signed-out visitors with the Thika Road Chama Group name, community handshake visual, member count, and login/register actions.
 - Made the opening screen the first route in the existing auth navigator; active sessions still go directly through the existing profile-status gate.

@@ -18,9 +18,47 @@ type Props = BottomTabScreenProps<MainTabParamList, 'Dashboard'>;
 
 type CardTone = 'green' | 'mint' | 'coral' | 'rose';
 
+type Countdown = { days: number; hours: number; minutes: number; seconds: number };
+
+function getNextThursdayDeadline(): Date {
+  const now = new Date();
+  const eatNow = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+  const daysUntilThursday = (4 - eatNow.getUTCDay() + 7) % 7;
+  const deadline = new Date(Date.UTC(
+    eatNow.getUTCFullYear(),
+    eatNow.getUTCMonth(),
+    eatNow.getUTCDate() + daysUntilThursday,
+    9,
+    0,
+    0,
+  ));
+
+  if (daysUntilThursday === 0 && eatNow.getUTCHours() >= 12) {
+    deadline.setUTCDate(deadline.getUTCDate() + 7);
+  }
+
+  return deadline;
+}
+
+function getCountdown(): Countdown {
+  const remaining = Math.max(0, getNextThursdayDeadline().getTime() - Date.now());
+  const totalSeconds = Math.floor(remaining / 1000);
+  return {
+    days: Math.floor(totalSeconds / 86400),
+    hours: Math.floor((totalSeconds % 86400) / 3600),
+    minutes: Math.floor((totalSeconds % 3600) / 60),
+    seconds: totalSeconds % 60,
+  };
+}
+
+function twoDigits(value: number): string {
+  return String(value).padStart(2, '0');
+}
+
 export default function DashboardScreen({ navigation }: Props) {
   const [memberName, setMemberName] = useState('Member');
   const [loading, setLoading] = useState(true);
+  const [countdown, setCountdown] = useState<Countdown>(getCountdown);
 
   useEffect(() => {
     let mounted = true;
@@ -48,15 +86,18 @@ export default function DashboardScreen({ navigation }: Props) {
     return () => { mounted = false; };
   }, []);
 
+  useEffect(() => {
+    const timer = setInterval(() => setCountdown(getCountdown()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <View style={styles.topBar}>
-        <View>
-          <Text style={styles.brand}>THIKA ROAD CHAMA GROUP</Text>
-          <Text style={styles.title}>Welcome, {loading ? '...' : memberName}</Text>
-          <Text style={styles.subtitle}>Your weekly savings at a glance</Text>
+        <View style={styles.topCopy}>
+          <Text style={styles.brand}>Thika Road{`\n`}Chama Group</Text>
         </View>
-        <View style={styles.profileDot}><Text style={styles.profileInitial}>{memberName.charAt(0).toUpperCase()}</Text></View>
+        <View style={styles.topActions}><Text style={styles.bell}>♟</Text><View style={styles.profileDot}><Text style={styles.profileInitial}>{memberName.charAt(0).toUpperCase()}</Text></View></View>
       </View>
 
       <View style={styles.welcomeBand}>
@@ -81,7 +122,11 @@ export default function DashboardScreen({ navigation }: Props) {
       <View style={styles.contributionCard}>
         <ContributionState icon="✓" label="Status" value="Awaiting payment data" tone="paid" />
         <View style={styles.divider} />
-        <ContributionState icon="◷" label="Deadline" value="Thursday, 12:00 PM EAT" tone="pending" />
+        <View style={styles.countdownBlock}>
+          <Text style={styles.stateLabel}>TIME TO DEADLINE</Text>
+          <Text style={styles.countdownValue}>{countdown.days}d {twoDigits(countdown.hours)}:{twoDigits(countdown.minutes)}:{twoDigits(countdown.seconds)}</Text>
+          <Text style={styles.stateValue}>Thursday, 12:00 PM EAT</Text>
+        </View>
       </View>
 
       <Text style={[styles.sectionTitle, styles.quickTitle]}>Quick Actions</Text>
@@ -126,9 +171,10 @@ const styles = StyleSheet.create({
   screen: { backgroundColor: '#F4F8F5', flex: 1 },
   content: { alignSelf: 'center', maxWidth: 760, padding: spacing.lg, paddingBottom: 36, width: '100%' },
   topBar: { alignItems: 'flex-start', flexDirection: 'row', justifyContent: 'space-between' },
-  brand: { color: colors.primary, fontSize: 13, fontWeight: '900', letterSpacing: 1.2 },
-  title: { color: colors.text, fontSize: 31, fontWeight: '900', marginTop: spacing.sm },
-  subtitle: { color: colors.textMuted, fontSize: 16, marginTop: spacing.xs },
+  topCopy: { flex: 1, minWidth: 0 },
+  brand: { color: colors.primaryDark, fontSize: 21, fontWeight: '900', lineHeight: 23 },
+  topActions: { alignItems: 'center', flexDirection: 'row', gap: spacing.sm },
+  bell: { color: colors.primary, fontSize: 25 },
   profileDot: { alignItems: 'center', backgroundColor: colors.primary, borderRadius: 24, height: 48, justifyContent: 'center', marginLeft: spacing.sm, width: 48 },
   profileInitial: { color: colors.white, fontSize: 20, fontWeight: '900' },
   welcomeBand: { alignItems: 'center', backgroundColor: '#DDF3DD', borderRadius: radius.lg, flexDirection: 'row', justifyContent: 'space-between', marginTop: spacing.lg, padding: spacing.md },
@@ -140,7 +186,7 @@ const styles = StyleSheet.create({
   card_green: { backgroundColor: '#BFF3B7' },
   card_mint: { backgroundColor: '#D9F4F0' },
   card_coral: { backgroundColor: '#FFD4D0' },
-  card_rose: { backgroundColor: '#F8C9D0' },
+  card_rose: { backgroundColor: '#DDF4E0' },
   cardTop: { alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' },
   cardIcon: { alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.42)', borderRadius: 18, height: 34, justifyContent: 'center', width: 34 },
   cardIconText: { color: colors.primaryDark, fontSize: 17, fontWeight: '900' },
@@ -158,6 +204,8 @@ const styles = StyleSheet.create({
   stateIconText: { color: colors.white, fontSize: 20, fontWeight: '900' },
   stateLabel: { color: colors.textMuted, fontSize: 11 },
   stateValue: { color: colors.text, fontSize: 12, fontWeight: '800', marginTop: 2 },
+  countdownBlock: { flex: 1 },
+  countdownValue: { color: colors.primaryDark, fontSize: 17, fontWeight: '900', marginTop: 2 },
   divider: { backgroundColor: '#DCE9E0', height: 42, width: 1 },
   quickTitle: { marginTop: spacing.lg },
   quickActions: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm },
