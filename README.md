@@ -384,6 +384,11 @@ The repository is connected to the GitHub remote above. Before making the next m
 - Added migration `0005_allow_protected_email_transition.sql` so the email-verification RPC can perform only its intended status transition while ordinary self-promotion remains blocked.
 - To bootstrap the first development chairman, temporarily disable only `trg_prevent_self_role_escalation` inside a transaction, update the chosen profile to `chairman` and `ACTIVE`, re-enable the trigger, and commit. Do not disable the trigger outside that transaction.
 
+### 2026-09-04 — Post-verification approval screen
+- Refined `WaitingApprovalScreen.tsx` to match the supplied mobile reference: green chama header, yellow `PENDING_APPROVAL` pill, check confirmation, illustrated approval area, Chairman Approval Required card, and Back to Login action.
+- The verified email is now passed into the approval screen and shown in the confirmation message.
+- Verified with `node_modules/.bin/tsc.cmd --noEmit` and `git diff --check` before deployment.
+
 ### 2026-09-03 — Opening screen
 - Added the branded opening screen for signed-out visitors with the Thika Road Chama Group name, community handshake visual, member count, and login/register actions.
 - Made the opening screen the first route in the existing auth navigator; active sessions still go directly through the existing profile-status gate.

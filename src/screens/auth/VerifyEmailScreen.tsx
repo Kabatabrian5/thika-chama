@@ -128,7 +128,7 @@ export default function VerifyEmailScreen({ route, navigation }: Props) {
       // Pending members must not retain a session that could be mistaken
       // for ACTIVE by another part of the app while awaiting approval.
       await supabase.auth.signOut();
-      navigation.replace('WaitingApproval');
+      navigation.replace('WaitingApproval', { email });
     } catch (err: any) {
       setErrorMessage(err.message ?? 'Invalid or expired code.');
       Alert.alert('Verification failed', err.message ?? 'Invalid or expired code.');

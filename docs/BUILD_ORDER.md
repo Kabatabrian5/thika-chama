@@ -87,6 +87,10 @@ where things stand in under a minute.
   actions in the Members table. Use a one-time SQL bootstrap to promote
   the development owner account before testing these controls.
 
+  Follow-up (2026-09-04): Refined the post-verification WaitingApproval
+  screen to match the supplied mobile reference and pass the verified email
+  into the confirmation message.
+
 - [ ] **Step 4: Edge Functions — mpesa-validation, mpesa-confirmation**
   Daraja C2B webhook handlers. Allocation logic: Fine → Weekly
   (2000 savings + 500 welfare) → Loan → Overdue/Advance. Test via
