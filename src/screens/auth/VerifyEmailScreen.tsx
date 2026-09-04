@@ -40,7 +40,10 @@ export default function VerifyEmailScreen({ route, navigation }: Props) {
   // One string per digit box, e.g. ["4","8","2","9","1","5"].
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(''));
   const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(RESEND_COOLDOWN_SECONDS);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Refs so we can auto-advance focus from box to box as the
   // member types, and jump back on backspace.
@@ -53,6 +56,8 @@ export default function VerifyEmailScreen({ route, navigation }: Props) {
   }, [resendCooldown]);
 
   function handleDigitChange(text: string, index: number) {
+    setErrorMessage('');
+    setSuccessMessage('');
     // Only accept a single digit; anything else (paste of full
     // code, letters, etc.) is ignored at this box but see the
     // paste-friendly branch below for the common case of a user
@@ -123,8 +128,12 @@ export default function VerifyEmailScreen({ route, navigation }: Props) {
         if (updateError) throw updateError;
       }
 
+      // Pending members must not retain a session that could be mistaken
+      // for ACTIVE by another part of the app while awaiting approval.
+      await supabase.auth.signOut();
       navigation.replace('WaitingApproval');
     } catch (err: any) {
+      setErrorMessage(err.message ?? 'Invalid or expired code.');
       Alert.alert('Verification failed', err.message ?? 'Invalid or expired code.');
     } finally {
       setLoading(false);
@@ -132,15 +141,34 @@ export default function VerifyEmailScreen({ route, navigation }: Props) {
   }
 
   async function handleResend() {
-    if (resendCooldown > 0) return;
+    if (resendCooldown > 0 || resending) return;
+    setResending(true);
+    setErrorMessage('');
+    setSuccessMessage('');
     try {
       const { error } = await supabase.auth.resend({ type: 'signup', email });
       if (error) throw error;
       setResendCooldown(RESEND_COOLDOWN_SECONDS);
       setDigits(Array(CODE_LENGTH).fill(''));
+      setSuccessMessage('A new 6-digit code was sent. Check your Gmail inbox and spam folder.');
       inputRefs.current[0]?.focus();
     } catch (err: any) {
-      Alert.alert('Could not resend code', err.message ?? 'Please try again shortly.');
+      const providerMessage = err.message ?? 'Please try again shortly.';
+      const normalizedMessage = providerMessage.toLowerCase();
+      const isRateLimited =
+        err.status === 429 ||
+        normalizedMessage.includes('rate limit') ||
+        normalizedMessage.includes('too many') ||
+        normalizedMessage.includes('once every');
+      const visibleMessage = isRateLimited
+        ? 'Supabase has temporarily limited verification emails. Wait for the countdown, then try again. Also check Gmail spam and Promotions.'
+        : providerMessage;
+
+      if (isRateLimited) setResendCooldown(RESEND_COOLDOWN_SECONDS);
+      setErrorMessage(visibleMessage);
+      Alert.alert('Could not resend code', visibleMessage);
+    } finally {
+      setResending(false);
     }
   }
 
@@ -172,17 +200,20 @@ export default function VerifyEmailScreen({ route, navigation }: Props) {
           ))}
         </View>
 
+        {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+        {successMessage ? <Text style={styles.successText}>{successMessage}</Text> : null}
+
         <View style={styles.timerRow}>
           <Text style={styles.timerText}>
             {resendCooldown > 0
-              ? `Code expires in ${String(Math.floor(resendCooldown / 60)).padStart(2, '0')}:${String(
+              ? `Resend available in ${String(Math.floor(resendCooldown / 60)).padStart(2, '0')}:${String(
                   resendCooldown % 60
                 ).padStart(2, '0')}`
-              : 'Code expired'}
+              : 'You can request a new code'}
           </Text>
-          <TouchableOpacity onPress={handleResend} disabled={resendCooldown > 0}>
+          <TouchableOpacity onPress={handleResend} disabled={resendCooldown > 0 || resending}>
             <Text style={[styles.resendText, resendCooldown > 0 && styles.resendDisabled]}>
-              Resend code
+              {resending ? 'Sending...' : 'Resend code'}
             </Text>
           </TouchableOpacity>
         </View>
@@ -242,4 +273,6 @@ const styles = StyleSheet.create({
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: colors.white, fontWeight: '700', fontSize: 16 },
   helpText: { color: colors.textMuted, marginTop: spacing.md, fontSize: 12 },
+  errorText: { color: colors.danger, textAlign: 'center', marginBottom: spacing.md },
+  successText: { color: colors.success, textAlign: 'center', marginBottom: spacing.md },
 });

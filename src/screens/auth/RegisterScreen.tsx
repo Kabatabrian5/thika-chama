@@ -13,9 +13,9 @@
  *      system, which we've configured (see docs/SUPABASE_SETUP.md)
  *      to send a 6-DIGIT CODE rather than a magic link, because
  *      members are on shared/borrowed phones. See screen 2/3.
- *   3. Insert a matching row into `profiles` with
- *      status = 'PENDING_EMAIL' (this is the DB default, so we
- *      don't even need to set it explicitly).
+ *   3. The `0002_profile_signup_trigger.sql` migration creates the
+ *      matching `profiles` row server-side because no authenticated
+ *      session exists while email confirmation is pending.
  *   4. Navigate to VerifyEmail, passing the email along.
  * ============================================================
  */
@@ -48,6 +48,8 @@ export default function RegisterScreen({ navigation }: Props) {
   const [nationalId, setNationalId] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   function validate(): string | null {
@@ -73,14 +75,23 @@ export default function RegisterScreen({ navigation }: Props) {
 
     setLoading(true);
     try {
+      const cleanName = fullName.trim();
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanNationalId = nationalId.trim();
       const normalizedPhone = normalizePhone(phone);
 
-      // Step 1: create the Supabase Auth user. This is what sends
-      // the 6-digit verification email (configured in the Supabase
-      // dashboard under Auth > Email Templates as OTP, not link).
+      // Supabase sends the 6-digit OTP during signup and stores the
+      // user in auth.users. Migration 0002 creates profiles server-side.
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: email.trim().toLowerCase(),
+        email: cleanEmail,
         password,
+        options: {
+          data: {
+            full_name: cleanName,
+            phone: normalizedPhone,
+            national_id: cleanNationalId,
+          },
+        },
       });
 
       if (authError) throw authError;
@@ -88,28 +99,7 @@ export default function RegisterScreen({ navigation }: Props) {
         throw new Error('Registration did not return a user. Please try again.');
       }
 
-      // Step 2: create the matching chama profile row.
-      // status defaults to PENDING_EMAIL in the DB (see 0001_init_profiles.sql),
-      // so we don't set it here — one less place for a typo/bug to hide.
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: authData.user.id,
-        email: email.trim().toLowerCase(),
-        phone: normalizedPhone,
-        full_name: fullName.trim(),
-        national_id: nationalId.trim(),
-      });
-
-      if (profileError) {
-        // Edge case: if profile insert fails after auth.signUp
-        // succeeded, the member exists in auth but not in our
-        // group. Surface this clearly rather than silently
-        // continuing to Verify Email as if all went well.
-        throw new Error(
-          `Account created but profile setup failed: ${profileError.message}. Please contact support.`
-        );
-      }
-
-      navigation.navigate('VerifyEmail', { email: email.trim().toLowerCase() });
+      navigation.navigate('VerifyEmail', { email: cleanEmail });
     } catch (err: any) {
       Alert.alert('Registration failed', err.message ?? 'Something went wrong.');
     } finally {
@@ -157,14 +147,18 @@ export default function RegisterScreen({ navigation }: Props) {
           value={password}
           onChangeText={setPassword}
           placeholder="Create a password"
-          secureTextEntry
+          secureTextEntry={!showPassword}
+          onToggleSecure={() => setShowPassword((value) => !value)}
+          isSecureVisible={showPassword}
         />
         <Field
           label="Confirm Password"
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           placeholder="Re-enter your password"
-          secureTextEntry
+          secureTextEntry={!showConfirmPassword}
+          onToggleSecure={() => setShowConfirmPassword((value) => !value)}
+          isSecureVisible={showConfirmPassword}
         />
 
         <TouchableOpacity
@@ -198,22 +192,36 @@ function Field(props: {
   onChangeText: (v: string) => void;
   placeholder: string;
   secureTextEntry?: boolean;
+  onToggleSecure?: () => void;
+  isSecureVisible?: boolean;
   keyboardType?: 'default' | 'email-address' | 'phone-pad' | 'number-pad';
   autoCapitalize?: 'none' | 'sentences';
 }) {
   return (
     <View style={styles.fieldWrap}>
       <Text style={styles.fieldLabel}>{props.label}</Text>
-      <TextInput
-        style={styles.input}
-        value={props.value}
-        onChangeText={props.onChangeText}
-        placeholder={props.placeholder}
-        placeholderTextColor={colors.textMuted}
-        secureTextEntry={props.secureTextEntry}
-        keyboardType={props.keyboardType ?? 'default'}
-        autoCapitalize={props.autoCapitalize ?? 'sentences'}
-      />
+      <View style={styles.inputRow}>
+        <TextInput
+          style={[styles.input, props.onToggleSecure && styles.secureInput]}
+          value={props.value}
+          onChangeText={props.onChangeText}
+          placeholder={props.placeholder}
+          placeholderTextColor={colors.textMuted}
+          secureTextEntry={props.secureTextEntry}
+          keyboardType={props.keyboardType ?? 'default'}
+          autoCapitalize={props.autoCapitalize ?? 'sentences'}
+        />
+        {props.onToggleSecure ? (
+          <TouchableOpacity
+            accessibilityRole="button"
+            accessibilityLabel={props.isSecureVisible ? `Hide ${props.label.toLowerCase()}` : `Show ${props.label.toLowerCase()}`}
+            onPress={props.onToggleSecure}
+            style={styles.showButton}
+          >
+            <Text style={styles.showButtonText}>{props.isSecureVisible ? 'Hide' : 'Show'}</Text>
+          </TouchableOpacity>
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -235,7 +243,9 @@ const styles = StyleSheet.create({
   subtitle: { color: colors.textMuted, marginTop: spacing.xs, marginBottom: spacing.lg },
   fieldWrap: { marginBottom: spacing.md },
   fieldLabel: { fontWeight: '600', color: colors.text, marginBottom: spacing.xs },
+  inputRow: { alignItems: 'center', flexDirection: 'row' },
   input: {
+    flex: 1,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.sm,
@@ -244,6 +254,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.text,
   },
+  secureInput: { paddingRight: 68 },
+  showButton: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, position: 'absolute', right: 1 },
+  showButtonText: { color: colors.primary, fontSize: 12, fontWeight: '800' },
   button: {
     backgroundColor: colors.primary,
     borderRadius: radius.sm,

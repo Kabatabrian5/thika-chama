@@ -19,6 +19,18 @@
 - Step 3: complete. Bottom tabs, profile-backed Dashboard, and read-only Members directory with search exist.
 - Step 4+: pending. Contributions, Daraja webhooks, allocation waterfall, fines, loans, receipts, and role administration are not complete.
 - The Contribute, Loans, and Profile tabs currently use temporary empty views until their build-order steps.
+- Signed-out visitors now land on `WelcomeScreen.tsx`, which links to the existing Login and Register screens.
+- `LoginScreen.tsx` now matches the supplied reference layout with branded header, community mark, field controls, remember-me row, and register footer.
+- Login uses a fixed flex layout rather than a page `ScrollView`; the complete form was verified at `390x844` with no document scrolling.
+- Registration now passes full name, normalized phone, and national ID through Auth metadata; migration `0002_profile_signup_trigger.sql` creates `profiles` server-side before email confirmation.
+- Registration password and confirm-password fields now include Show/Hide controls.
+- `RegisterScreen.tsx` no longer inserts into `profiles` from the client after signup. Because email-confirmed signup has no session, that insert was blocked by RLS; migration `0002_profile_signup_trigger.sql` is the sole profile-creation path during signup.
+- `VerifyEmailScreen.tsx` now renders verification and resend errors inline, because `Alert.alert` can be invisible on Expo web. After successful verification it updates `PENDING_APPROVAL`, signs out the pending session, and navigates to `WaitingApproval`.
+- The Verify Email resend control has a local 60-second cooldown. It now labels that cooldown accurately, shows `Sending...`, confirms a new code visibly, and renders Supabase resend errors inline. Supabase may still rate-limit repeated emails; wait for the displayed cooldown/rate-limit period before trying again.
+- Resend rate-limit responses are now identified explicitly, trigger the local retry cooldown, and tell the member to check Gmail spam/Promotions. Supabase allows one signup confirmation request every 60 seconds and its default email service allows two auth emails per hour; repeated testing requires waiting for the quota or configuring custom SMTP.
+- Signup verification remains six-digit OTP-based in the app; Supabase must use OTP length `6`, expiry `600` seconds, and `{{ .Token }}` in the Confirm signup template instead of `{{ .ConfirmationURL }}`.
+- Supabase Email provider settings have been confirmed in the dashboard: `Email OTP expiration = 600` seconds and `Email OTP length = 6` digits. These values are configured under Authentication -> Providers -> Email, not inside the email template.
+- The Confirm signup template must display `{{ .Token }}`. Gmail SMTP can be used for development without buying a custom domain. Supabase may warn that Gmail is intended for personal rather than transactional email; accept that limitation for small-scale testing and use a transactional provider for production.
 
 ## Important product rules
 - Weekly contribution is KES 2,500: KES 2,000 savings and KES 500 welfare.
@@ -44,8 +56,10 @@
 - EAS project ID is `b4e90820-f27c-48ee-9b1e-9eefbb0be9a5`; it is linked directly under `expo.extra.eas.projectId` in `app.json` because the interactive `eas init` process became stuck after browser authentication.
 - The first EAS attempt used `npx eas`, which resolves the unrelated npm package `eas@0.1.0` and fails with "could not determine executable to run". Use the official package name `eas-cli` instead: `npx eas-cli@latest build --platform android --profile development`.
 - `eas-cli@23.2.0` and `@sentry/core@10.73.0` are now installed as development dependencies; the missing-module error is fixed and `node_modules/.bin/eas.cmd --version` returns `eas-cli/23.2.0`.
-- The first local build attempt with the repaired CLI produced no output and was stopped before authentication or cloud build submission, so no Android build or APK link exists yet.
+- An earlier local build attempt with the repaired CLI produced no output and was stopped before authentication or cloud build submission; this is historical only because the corrected EAS build below succeeded.
 - `react-dom` is pinned to `19.2.3` to match React `19.2.3`; leaving it as `^19.2.3` allowed npm to resolve `19.2.8` and caused a peer-dependency conflict during deployment.
+- EAS build `99699a9a-e138-41f4-9e7d-ae6df06af98d` failed because `npm ci` reported `Missing: typescript@5.9.3 from lock file`; `package.json` and `package-lock.json` are now aligned on `typescript ~5.9.3`.
+- Corrected build `3b39beae-5fb3-489e-bfb4-5c3586ccb35b` finished successfully. APK: https://expo.dev/artifacts/eas/rkq895el6GPVAPGkz74iYQbm2Zp_5YZFdZYsTL2FbwA.apk
 - Latest local verification: `node_modules/.bin/tsc.cmd --noEmit` passed and `npm run build` exported `dist` successfully.
 - If Vercel still reports an error, open the failed deployment and inspect the Build Logs. The screenshot alone does not contain the cause.
 
@@ -62,6 +76,12 @@ Server secrets must stay in Supabase Edge Function secrets, never in the Expo bu
 
 Never commit `.env` or service-role credentials.
 
+Auth email delivery decision:
+- The app requires a six-digit signup OTP, not a confirmation link.
+- Configure Email OTP length as `6` and expiration as `600` seconds under Authentication -> Providers -> Email.
+- Configure Confirm signup under Email Templates to display `{{ .Token }}`.
+- Gmail SMTP is acceptable for development testing and does not require a paid custom domain. A personal-email provider warning from Supabase is expected; use transactional SMTP for production.
+
 ## Design references
 The original design images are stored outside this repo at:
 `C:\Users\hp\OneDrive\Desktop\chama`
@@ -74,6 +94,10 @@ They are reference material for the UI. Copy only approved assets into `assets/`
 - Keep comments close to the code they explain so another AI can debug the flow quickly.
 - Update `docs/BUILD_ORDER.md` whenever a step changes status.
 - Update this file whenever implementation, deployment, environment, schema, or architectural decisions change.
+- The 2026-09-03 opening-screen change passed `node_modules/.bin/tsc.cmd --noEmit` and `npm run build`.
+- The 2026-09-03 Login screen refinement passed `node_modules/.bin/tsc.cmd --noEmit` and `npm run build`; browser navigation from Welcome to Login was verified at `http://localhost:8083`.
+- The mobile layout correction also passed those checks and a browser viewport check at `390x844`.
+- Registration persistence fix passed `node_modules/.bin/tsc.cmd --noEmit`; run migration 0002 in Supabase before testing it.
 - Run `node_modules/.bin/tsc.cmd --noEmit` after TypeScript changes.
 - Run `npm run build` after web/deployment changes.
 - Do not claim a deployment or test succeeded without fresh command output.
@@ -90,11 +114,14 @@ npx eas build --platform android --profile development
 Install the resulting APK on the Android phone. Later code changes can be tested with the development server and development client. EAS requires the user to authenticate with their Expo account before the cloud build.
 
 ## Next action
-After the EAS phone build is working, implement Step 4 and Step 5 in order:
-1. Add contributions/fines/transactions schema and RLS migration.
-2. Add server-only Daraja validation and confirmation Edge Functions.
-3. Test idempotency and phone lookup with Daraja simulator payloads.
-4. Build the reading-mode Contribute screen and realtime receipt flow.
+Supabase accepted a real signup and Gmail received the six-digit OTP. Finish one fresh end-to-end verification with the updated web bundle, then implement Step 4 and Step 5 in order:
+1. Enter the real code and confirm VerifyEmailScreen reaches Waiting for Approval.
+2. Add contributions/fines/transactions schema and RLS migration.
+3. Add server-only Daraja validation and confirmation Edge Functions.
+4. Test idempotency and phone lookup with Daraja simulator payloads.
+5. Build the reading-mode Contribute screen and realtime receipt flow.
 
 ## Handoff rule
 Every future AI or developer must update `README.md`, `docs/BUILD_ORDER.md`, and this file when a meaningful project decision or implementation step is completed. The repository should always explain what is done, what is next, what is blocked, and how to verify it.
+
+Every meaningful change must also add a dated entry to the `README.md` progress log. Include the implementation result, verification command or browser check, and any remaining manual setup or blocker. Do not mark a feature complete based only on intended code; record only behavior verified locally or in the connected service.

@@ -30,6 +30,44 @@ where things stand in under a minute.
   with name search. Financial totals remain clearly pending until the
   contributions migration is implemented in Step 4-5.
 
+  Follow-up (2026-09-03): Added the branded signed-out opening screen
+  with a community handshake visual and Login/Register entry points.
+  Also refined the Login screen to match the supplied mobile reference
+  while preserving the existing authentication and status routing logic.
+  Registration profile creation now runs through an Auth trigger in
+  migration `0002_profile_signup_trigger.sql`, so email-confirmed signup
+  can create `profiles` before a client session exists.
+
+  Follow-up (2026-09-04): Confirmed the Supabase Email provider settings
+  are `Email OTP length = 6` digits and `Email OTP expiration = 600`
+  seconds. The Confirm signup template must use `{{ .Token }}`. Gmail
+  SMTP is acceptable for development without a custom domain; the next
+  check is live delivery to a Gmail inbox before Step 4 begins.
+
+  Follow-up (2026-09-04): Removed the client-side profile insert from
+  registration because email-confirmed signup has no authenticated session
+  and RLS rejects it. Migration `0002_profile_signup_trigger.sql` creates
+  the profile server-side; `RegisterScreen.tsx` now proceeds to Verify Email.
+
+  Follow-up (2026-09-04): Added visible inline errors for wrong/expired OTPs
+  and stabilized the successful verification route by signing out the pending
+  session before showing WaitingApproval.
+
+  Follow-up (2026-09-04): Live signup testing confirmed Supabase accepted the
+  registration and Gmail received the six-digit OTP. One fresh successful-code
+  test remains before Step 4; the wrong-code feedback fix is already applied.
+
+  Follow-up (2026-09-04): Clarified the resend cooldown and added visible
+  resend success/error feedback so a new Gmail request no longer appears to
+  do nothing on Expo web.
+
+  Follow-up (2026-09-04): Resend now identifies Supabase rate-limit
+  responses, applies the retry cooldown after a throttled request, and
+  explains that Gmail spam/Promotions should be checked. Supabase limits
+  signup confirmation requests to one every 60 seconds; its default email
+  service also allows only two auth emails per hour. Custom SMTP remains
+  the delivery fix for repeated development testing.
+
 - [ ] **Step 4: Edge Functions — mpesa-validation, mpesa-confirmation**
   Daraja C2B webhook handlers. Allocation logic: Fine → Weekly
   (2000 savings + 500 welfare) → Loan → Overdue/Advance. Test via

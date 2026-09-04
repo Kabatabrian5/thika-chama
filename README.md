@@ -95,13 +95,14 @@ The project began as an Expo TypeScript mobile app for the 15-member Thika Road 
 - Installed `expo-dev-client` for the development APK.
 - Aligned the Expo slug with the linked EAS project (`chama`). The visible app name remains `thika-chama` and the Android package remains `com.kabatabrian5.thikachama`.
 - Generated and stored the Android signing keystore through Expo.
-- Submitted the Android development build to EAS. The current build is queued on the free tier; it is a test/development APK, not the final production release. Build page: https://expo.dev/accounts/briankabatas-team/projects/chama/builds/d196355f-b9b4-4920-a691-8048fb05a602
+- Submitted the Android development build to EAS. The build spent approximately one hour in the free queue and then failed during the Android build, so no APK download link was produced. Build page: https://expo.dev/accounts/briankabatas-team/projects/chama/builds/d196355f-b9b4-4920-a691-8048fb05a602. It is a test/development build, not the final production release.
 
 ### Verification completed
 
 - `node_modules/.bin/tsc.cmd --noEmit` passed.
 - `npm run build` passed and exported the web app to `dist`.
-- EAS accepted the Android build upload and created a build page. The APK download link will appear when the build status becomes `Finished`.
+- EAS accepted the Android build upload and created a build page. The latest corrected development build finished successfully and produced an APK.
+- APK download: https://expo.dev/artifacts/eas/rkq895el6GPVAPGkz74iYQbm2Zp_5YZFdZYsTL2FbwA.apk
 
 ### Not yet completed
 
@@ -119,14 +120,16 @@ The following work has not been implemented yet:
 
 ### Current blockers and manual setup
 
-- A real Supabase project still needs to be created or connected, the `profiles` migration needs to be run, and the email OTP/RLS settings need to be configured as described in `docs/SUPABASE_SETUP.md`.
+- A real Supabase project still needs to be created or connected, and the `profiles` migrations need to be run as described in `docs/SUPABASE_SETUP.md`.
+- The dashboard screenshot confirms **Email OTP length = 6 digits** and **Email OTP expiration = 600 seconds**. The remaining auth blocker is saving SMTP settings, confirming the `{{ .Token }}` template, and testing delivery to a real Gmail inbox.
+- Gmail SMTP does not require a paid custom domain for development. Supabase's personal-email provider warning is expected; use a transactional provider for production.
 - App-side Supabase values must be placed in `.env` as `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY`.
 - Daraja and other server credentials must remain Supabase Edge Function secrets and are intentionally not part of the current phone build.
 - Expo Go is not the phone-testing target for SDK 57. Use the EAS development APK and development client instead.
 
 ## Exact continuation point
 
-The project is currently at **Step 3 of 11**. The immediate user-facing task is to finish the queued EAS development build and install its APK on an Android phone. After phone installation is confirmed, continue with **Step 4** by adding the financial tables and RLS migration, followed by the server-only Daraja webhook functions. Do not start Daraja implementation until the phone testing path is working.
+The project is currently at **Step 3 of 11**. The EAS development APK build and Gmail OTP delivery are working; the next product task is to complete one fresh Register -> six-digit Verify Email -> Waiting for Approval test with the updated bundle. Then continue with **Step 4** by adding the financial tables and RLS migration, followed by the server-only Daraja webhook functions. Do not start Daraja implementation until the phone testing path is working.
 
 ## Tech stack
 - Expo SDK 57 / React Native 0.86
@@ -135,7 +138,7 @@ The project is currently at **Step 3 of 11**. The immediate user-facing task is 
 - React Navigation
 - Daraja C2B for reading M-Pesa confirmations
 - Africa's Talking for SMS
-- SendGrid for email
+- Supabase Auth email delivery; Gmail SMTP is acceptable for development testing, while a transactional provider is recommended for production
 - AsyncStorage for auth persistence
 
 ## Folder structure
@@ -293,7 +296,96 @@ npx expo start
 ```
 
 ## Important note about repository state
-The repository is connected to the GitHub remote above. Before making the next meaningful implementation change, review `docs/SPEC.md`, `docs/BUILD_ORDER.md`, and `docs/AI_HANDOFF.md`, then update the status documentation when the work is complete.
+The repository is connected to the GitHub remote above. Before making the next meaningful implementation change, review `docs/SPEC.md`, `docs/BUILD_ORDER.md`, and `docs/AI_HANDOFF.md`, then update this README with the dated outcome, verification command, blocker, or next action when the work is complete. Keep `docs/BUILD_ORDER.md` and `docs/AI_HANDOFF.md` aligned with the same change.
+
+## Progress log
+
+### 2026-09-02 — Documentation baseline
+- Confirmed the project is at Step 3 of 11: authentication, status-gated navigation, dashboard, and read-only members are implemented.
+- Confirmed financial totals are intentionally pending because the contributions, fines, and transactions schema does not exist yet.
+- Recorded the EAS development-build failure as the current phone-testing blocker; inspect the expanded EAS logs before retrying.
+- Next action remains to get the development APK installed and verify the auth/navigation flow, then begin Step 4.
+
+### 2026-09-02 — Android build retry attempt
+- The failed build `d196355f-b9b4-4920-a691-8048fb05a602` was confirmed by EAS as an `UNKNOWN_ERROR` in the `Install dependencies` phase, with no artifact.
+- A clean local `npm ci --no-audit --no-fund` attempt stalled during package retrieval, and the new EAS submission could not start before the local CLI session timed out.
+- The dependency installation later completed successfully: 930 packages were added, with only deprecation and pending install-script warnings.
+- A new development build was submitted successfully with `npx eas-cli@latest build --platform android --profile development --non-interactive --no-wait`.
+- New build page: https://expo.dev/accounts/briankabatas-team/projects/chama/builds/99699a9a-e138-41f4-9e7d-ae6df06af98d
+- The corrected build `3b39beae-5fb3-489e-bfb4-5c3586ccb35b` finished successfully and produced an APK.
+- Build page: https://expo.dev/accounts/briankabatas-team/projects/chama/builds/3b39beae-5fb3-489e-bfb4-5c3586ccb35b
+- APK download: https://expo.dev/artifacts/eas/rkq895el6GPVAPGkz74iYQbm2Zp_5YZFdZYsTL2FbwA.apk
+- The earlier waiting submission returned `request to https://api.expo.dev/graphql failed`; it did not create a second build. The `--no-wait` submission above is the valid build record.
+
+### 2026-09-03 — EAS dependency failure diagnosed
+- EAS build `99699a9a-e138-41f4-9e7d-ae6df06af98d` failed in `INSTALL_DEPENDENCIES` because `npm ci` found `package.json` and `package-lock.json` out of sync and reported `Missing: typescript@5.9.3 from lock file`.
+- Aligned `typescript` to `~5.9.3` in both manifests and verified the synchronized lockfile with `npm ci --include=dev --ignore-scripts --no-audit --no-fund --dry-run`.
+
+### 2026-09-04 — OTP dashboard settings confirmed
+- Confirmed in Supabase Authentication -> Providers -> Email that Email OTP length is `6` digits and expiration is `600` seconds.
+- Confirmed the code length is configured in the Email provider settings, not in Email Templates. The Confirm signup template must display `{{ .Token }}`.
+- Documented Gmail SMTP as the no-custom-domain development path. Supabase's warning about personal rather than transactional email is expected.
+- Live signup testing confirmed that Supabase accepted registration and sent the six-digit code to Gmail.
+- Next action: enter the real code in Verify Email and confirm the app reaches Waiting for Approval.
+
+### 2026-09-04 — Registration navigation fix
+- Removed the client-side `profiles` insert from `RegisterScreen.tsx`. With email confirmation enabled, signup has no authenticated session and the `profiles` RLS policy correctly rejects that insert.
+- Migration `0002_profile_signup_trigger.sql` already creates the profile server-side during `auth.users` insertion, so successful signup can now navigate to the six-digit Verify Email screen.
+- Verified with `node_modules/.bin/tsc.cmd --noEmit`; live Gmail delivery was confirmed in the subsequent test entry.
+
+### 2026-09-04 — OTP verification feedback fix
+- Added an inline verification error message so wrong or expired codes are visible on web and mobile even when `Alert.alert` is not rendered by the platform.
+- After a successful code, the app updates the profile to `PENDING_APPROVAL`, signs out the pending member, and then opens the approval screen so the root session gate cannot reset navigation.
+- Verified with `node_modules/.bin/tsc.cmd --noEmit` and `git diff --check`.
+- TypeScript and Expo web export passed after the repair.
+- Submitted corrected EAS build `3b39beae-5fb3-489e-bfb4-5c3586ccb35b`; it completed successfully and produced the APK linked in the deployment notes above.
+
+### 2026-09-04 — Live Gmail OTP test
+- Confirmed a real signup request is accepted by Supabase and a six-digit OTP is sent to Gmail; the email delivery path is working.
+- The first wrong-code test gave no visible feedback on Expo web because errors were only sent through `Alert.alert`; inline error rendering is now implemented.
+- The successful-code route still needs one fresh end-to-end confirmation after the updated bundle is loaded.
+
+### 2026-09-04 — Resend OTP feedback
+- Clarified the verification timer as a resend cooldown, not the OTP expiration timer.
+- Resend now shows `Sending...`, confirms visibly when a new code was sent, and displays Supabase rate-limit or delivery errors inline on web and mobile.
+- Verified with `node_modules/.bin/tsc.cmd --noEmit` and `git diff --check`.
+
+### 2026-09-04 — Resend rate-limit handling
+- Confirmed from Supabase documentation that signup confirmation requests are limited to once every 60 seconds and the default email service allows two auth emails per hour.
+- Updated `VerifyEmailScreen.tsx` to recognize throttled resend responses, restart the retry countdown, and explain the Gmail spam/Promotions check instead of making a blocked request appear silently broken.
+- Verified with `node_modules/.bin/tsc.cmd --noEmit`.
+- Remaining delivery action: wait for the Supabase email quota or configure custom SMTP before repeating multiple OTP tests.
+
+### 2026-09-03 — Opening screen
+- Added the branded opening screen for signed-out visitors with the Thika Road Chama Group name, community handshake visual, member count, and login/register actions.
+- Made the opening screen the first route in the existing auth navigator; active sessions still go directly through the existing profile-status gate.
+- Verified with `node_modules/.bin/tsc.cmd --noEmit` and `npm run build`.
+
+### 2026-09-03 — Login screen refinement
+- Restyled the Login screen to match the supplied mobile reference: green group header, centered community mark, labeled email/password fields, remember-me control, forgot-password link, prominent Login action, and Register footer.
+- Preserved the existing Supabase sign-in and strict profile-status routing behavior.
+- Verified the welcome-to-login browser navigation at `http://localhost:8083`, `node_modules/.bin/tsc.cmd --noEmit`, and `npm run build`.
+
+### 2026-09-03 — Mobile Login layout correction
+- Removed unnecessary page scrolling from Login and tightened the responsive vertical layout so the complete form fits a phone viewport.
+- Verified at `390x844`: Login `scrollHeight` equals `clientHeight`, with the form, actions, and footer visible.
+
+### 2026-09-03 — Registration profile persistence fix
+- Fixed registration so profile fields are sent as Supabase Auth metadata and a server-side `auth.users` trigger creates the matching `profiles` row before email confirmation.
+- Added `supabase/migrations/0002_profile_signup_trigger.sql`, including a repair query for eligible users created before the trigger.
+- The migration must be run in Supabase SQL Editor before testing registration again. Existing users created by the old flow may need to be deleted and recreated because their profile metadata was not captured.
+- Verified the registration code with `node_modules/.bin/tsc.cmd --noEmit`.
+
+### 2026-09-04 — Registration usability and OTP settings
+- Added Show/Hide controls to both Register password fields.
+- Confirmed the app already verifies signup with `verifyOtp` and expects a six-digit code; Supabase must be configured with OTP length `6`, expiration `600` seconds, and `{{ .Token }}` in the Confirm signup template to send a code instead of a link.
+- Verified with `node_modules/.bin/tsc.cmd --noEmit` and `npm run build`.
+
+### 2026-09-04 — Handoff maintenance rule
+- Confirmed that every meaningful implementation, deployment, schema, or configuration change must update `README.md`, `docs/BUILD_ORDER.md`, and `docs/AI_HANDOFF.md`.
+- Each progress entry must include a date, verified outcome, validation command or browser check, and any remaining manual setup or blocker.
+
+Every meaningful implementation, deployment, schema, or verification change should add a dated entry here and update the current status above. Record only facts that have been verified locally or in the linked service.
 
 ## App Screens
 
