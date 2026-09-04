@@ -127,6 +127,44 @@ The following work has not been implemented yet:
 - Daraja and other server credentials must remain Supabase Edge Function secrets and are intentionally not part of the current phone build.
 - Expo Go is not the phone-testing target for SDK 57. Use the EAS development APK and development client instead.
 
+## Temporary development shortcuts and deferred work
+
+These shortcuts were used to keep development moving. They are not
+considered complete product features and must be revisited before a
+production release:
+
+- **First-chairman bootstrap:** because no chairman existed initially,
+    the first development chairman was promoted manually in Supabase SQL
+    by temporarily disabling `trg_prevent_self_role_escalation` inside a
+    transaction. Replace this with a documented production bootstrap or
+    invite flow before handing the system to the real chairman.
+- **Email verification transition:** migrations `0003` and `0005` add a
+    protected RPC and trigger marker for `PENDING_EMAIL` to
+    `PENDING_APPROVAL`. Confirm that migrations 0003 and 0005 are installed
+    in the live project; this has not yet been automated through Supabase
+    CLI deployment.
+- **Chairman approval and removal:** migrations `0004` and `0006` add the
+    `manage_member` RPC and Members-table buttons. The UI now reports errors,
+    but the live database must have both migrations applied and the flow
+    still needs an end-to-end approve, reject, and remove test.
+- **Manual test-user cleanup:** test accounts have been removed directly
+    from `auth.users` with SQL. The in-app Remove action is the intended
+    replacement, but it still requires live RPC verification and audit
+    decisions before production.
+- **Email delivery:** Gmail SMTP and Supabase email quotas remain a
+    development dependency. Configure a transactional SMTP provider and
+    test delivery/rate limits before production.
+- **Unimplemented financial workflow:** contributions, fines, transactions,
+    Daraja validation/confirmation, allocation, loans, receipts, SMS, audit
+    records, RLS review, and backups remain deferred to Steps 4-11.
+- **Client delivery:** Vercel is the live web preview. A standalone EAS
+    preview/production APK and update strategy still need to be prepared
+    after the core workflow is stable.
+
+When resuming, start by applying and verifying migrations 0003-0006 in
+Supabase, then test registration -> OTP -> pending approval -> chairman
+approve/reject/remove without manual SQL. Only after that resume Step 4.
+
 ## Exact continuation point
 
 The project is currently at **Step 3 of 11**. The EAS development APK build and Gmail OTP delivery are working; the next product task is to complete one fresh Register -> six-digit Verify Email -> Waiting for Approval test with the updated bundle. Then continue with **Step 4** by adding the financial tables and RLS migration, followed by the server-only Daraja webhook functions. Do not start Daraja implementation until the phone testing path is working.

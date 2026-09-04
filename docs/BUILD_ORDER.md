@@ -94,6 +94,15 @@ where things stand in under a minute.
   Follow-up (2026-09-04): Added inline success/error feedback for chairman
   member actions and migration 0006 to harden the management RPC role check.
 
+  Deferred-process ledger (2026-09-04): Development was advanced with
+  manual SQL for first-chairman bootstrap, test-user deletion, and stuck
+  profile status repair. Migrations 0003-0006 exist in the repository but
+  still require live Supabase application and end-to-end verification.
+  Approval, rejection, removal, email delivery, and trigger behavior must
+  be retested without SQL before this auth/admin slice is considered done.
+  Financial workflow, Daraja, fines, loans, receipts, SMS, audit, backups,
+  production RLS review, and standalone APK delivery remain deferred.
+
 - [ ] **Step 4: Edge Functions — mpesa-validation, mpesa-confirmation**
   Daraja C2B webhook handlers. Allocation logic: Fine → Weekly
   (2000 savings + 500 welfare) → Loan → Overdue/Advance. Test via
