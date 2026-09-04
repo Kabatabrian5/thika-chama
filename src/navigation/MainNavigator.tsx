@@ -12,6 +12,8 @@ import { Text } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import DashboardScreen from '../screens/main/DashboardScreen';
 import MembersScreen from '../screens/main/MembersScreen';
+import ContributeScreen from '../screens/main/ContributeScreen';
+import ProfileScreen from '../screens/main/ProfileScreen';
 import { colors } from '../lib/theme';
 
 export type MainTabParamList = {
@@ -35,9 +37,9 @@ export default function MainNavigator() {
     }}>
       <Tabs.Screen name="Dashboard" component={DashboardScreen} options={{ tabBarIcon: ({ color }) => <TabIcon glyph="⌂" color={color} /> }} />
       <Tabs.Screen name="Members" component={MembersScreen} options={{ tabBarIcon: ({ color }) => <TabIcon glyph="♧" color={color} /> }} />
-      <Tabs.Screen name="Contribute" component={ComingSoonScreen} options={{ tabBarIcon: ({ color }) => <TabIcon glyph="＋" color={color} /> }} />
+      <Tabs.Screen name="Contribute" component={ContributeScreen} options={{ tabBarIcon: ({ color }) => <TabIcon glyph="＋" color={color} /> }} />
       <Tabs.Screen name="Loans" component={ComingSoonScreen} options={{ tabBarIcon: ({ color }) => <TabIcon glyph="▤" color={color} /> }} />
-      <Tabs.Screen name="Profile" component={ComingSoonScreen} options={{ tabBarIcon: ({ color }) => <TabIcon glyph="●" color={color} /> }} />
+      <Tabs.Screen name="Profile" component={ProfileScreen} options={{ tabBarIcon: ({ color }) => <TabIcon glyph="●" color={color} /> }} />
     </Tabs.Navigator>
   );
 }

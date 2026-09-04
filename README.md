@@ -85,7 +85,8 @@ The project began as an Expo TypeScript mobile app for the 15-member Thika Road 
 - Added clearly marked pending financial summary cards instead of inventing balances before the financial schema exists.
 - Added the read-only Members directory with profile loading, alphabetical ordering, member count, and name search.
 - Added a reading-mode Contribute screen locally with manual payment instructions, weekly allocation preview, linked-phone placeholder, polling-status placeholder, and fine/loan notice. It is still uncommitted and not yet connected to live payment records.
-- Loans and Profile remain temporary empty views until their build-order steps are implemented.
+- Loans remains a temporary empty view until its build-order step is implemented.
+- Profile is now wired locally with editable name/phone fields, locked email/national ID, role badge, save, logout, and a photo-upload placeholder.
 
 ### Deployment and phone testing preparation
 
@@ -463,6 +464,12 @@ The repository is connected to the GitHub remote above. Before making the next m
 - Added the local reading-mode `ContributeScreen.tsx` and wired it into the Contribute tab.
 - The interface includes Paybill instructions, KES 2,500 allocation preview, linked-phone placeholder, five-second polling placeholder, and fine/loan notice.
 - This screen is intentionally not marked complete: Paybill details, bank/Jenga/Daraja confirmation, realtime records, and receipts still need implementation.
+
+### 2026-09-04 — Profile interface
+- Added `ProfileScreen.tsx` and wired it into the Profile tab using the supplied Edit Profile reference.
+- Profile loads the signed-in member from `profiles`, saves validated full name and Kenyan phone changes, locks email and national ID, displays role and verification state, and supports logout.
+- Photo selection/storage remains deferred until the storage and image-picker step.
+- Verified with `node_modules/.bin/tsc.cmd --noEmit`, `npm run build`, and `git diff --check`.
 
 ### 2026-09-03 — Opening screen
 - Added the branded opening screen for signed-out visitors with the Thika Road Chama Group name, community handshake visual, member count, and login/register actions.

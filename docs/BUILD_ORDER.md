@@ -143,6 +143,10 @@ where things stand in under a minute.
   with no update/delete policy ever.
 
 - [ ] **Step 8: Profile, Edit Profile, My Receipts (email/export)**
+  Status notes (2026-09-04): Profile/Edit Profile interface is now wired
+  locally in `ProfileScreen.tsx`. Name/phone save and logout work against
+  the current schema; avatar storage, password change, receipts, and
+  exports remain pending.
 
 - [ ] **Step 9: Chairman — Manage Members, Pending Approvals**
 
