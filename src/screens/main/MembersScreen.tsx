@@ -8,9 +8,10 @@
  * ============================================================
  */
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Image, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { colors, radius, spacing } from '../../lib/theme';
+import { getDefaultAvatarUrl } from '../../lib/defaultAvatar';
 
 type Member = { id: string; full_name: string; phone: string; status: string; role: string };
 
@@ -137,7 +138,9 @@ export default function MembersScreen() {
         onRefresh={() => loadMembers(true)}
         ListEmptyComponent={<Text style={styles.empty}>No members match your search.</Text>}
         renderItem={({ item }) => <View style={styles.memberRow}>
-          <View style={styles.avatar}><Text style={styles.avatarText}>{item.full_name.charAt(0).toUpperCase()}</Text></View>
+          <View style={styles.avatar}>
+            <Image source={{ uri: getDefaultAvatarUrl(item.full_name) }} style={styles.avatarImage} />
+          </View>
           <View style={styles.memberDetails}>
             <Text style={styles.memberName}>{item.full_name}</Text>
             <Text style={styles.memberPhone}>{item.phone}</Text>
@@ -170,7 +173,7 @@ const styles = StyleSheet.create({
   list: { padding: spacing.md },
   memberRow: { alignItems: 'center', backgroundColor: colors.white, borderRadius: radius.sm, flexDirection: 'row', marginBottom: spacing.sm, padding: spacing.md },
   avatar: { alignItems: 'center', backgroundColor: colors.primaryLight, borderRadius: 22, height: 44, justifyContent: 'center', width: 44 },
-  avatarText: { color: colors.primaryDark, fontSize: 18, fontWeight: '800' },
+  avatarImage: { borderRadius: 22, height: 44, width: 44 },
   memberDetails: { flex: 1, marginLeft: spacing.md },
   memberName: { color: colors.text, fontWeight: '700' },
   memberPhone: { color: colors.textMuted, fontSize: 12, marginTop: 2 },

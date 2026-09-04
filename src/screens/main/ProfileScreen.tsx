@@ -14,6 +14,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../../lib/supabase';
 import { displayPhone, isValidKenyanPhone, normalizePhone } from '../../lib/phone';
 import { colors, radius, spacing } from '../../lib/theme';
+import { getDefaultAvatarUrl } from '../../lib/defaultAvatar';
 
 export default function ProfileScreen() {
   const [userId, setUserId] = useState('');
@@ -172,7 +173,9 @@ export default function ProfileScreen() {
       <View style={styles.brandArea}>
         <Text style={styles.brand}>Thika Road Chama Group</Text>
         <Pressable accessibilityRole="button" accessibilityLabel="Change profile photo" onPress={handlePickPhoto} style={styles.avatarButton}>
-          <View style={styles.avatar}>{avatarUrl ? <Image source={{ uri: avatarUrl }} style={styles.avatarImage} /> : <Text style={styles.avatarText}>{initials}</Text>}</View>
+          <View style={styles.avatar}>
+            <Image source={{ uri: avatarUrl || getDefaultAvatarUrl(fullName) }} style={styles.avatarImage} />
+          </View>
           <View style={styles.camera}><Text style={styles.cameraText}>●</Text></View>
         </Pressable>
         <Text style={styles.photoHint}>Tap to change photo</Text>
