@@ -361,6 +361,13 @@ The repository is connected to the GitHub remote above. Before making the next m
 - The splash transitions automatically to Login after 1.4 seconds; registration remains available from Login.
 - Verified with `node_modules/.bin/tsc.cmd --noEmit` before the Vercel redeploy.
 
+### 2026-09-04 — Auth form usability and duplicate-account feedback
+- Registration now limits phone input to 19 digits and national ID input to 8 digits, while retaining Kenyan phone validation and 7-8 digit ID validation.
+- Registration errors render inline on web. Duplicate email, phone, or national ID responses now tell the user that the account already exists and to log in instead.
+- Login errors render inline, and a confirmed account with a stale `PENDING_EMAIL` profile is advanced to `PENDING_APPROVAL` rather than being sent through OTP again.
+- Refined Register and Login styling with branded headers, elevated form surfaces, clearer labels, and stronger primary actions.
+- Verified with `node_modules/.bin/tsc.cmd --noEmit`, `npm run build`, and `git diff --check`.
+
 ### 2026-09-03 — Opening screen
 - Added the branded opening screen for signed-out visitors with the Thika Road Chama Group name, community handshake visual, member count, and login/register actions.
 - Made the opening screen the first route in the existing auth navigator; active sessions still go directly through the existing profile-status gate.

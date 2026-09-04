@@ -51,6 +51,7 @@ export default function RegisterScreen({ navigation }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   function validate(): string | null {
     if (!fullName.trim()) return 'Please enter your full name.';
@@ -67,8 +68,10 @@ export default function RegisterScreen({ navigation }: Props) {
   }
 
   async function handleRegister() {
+    setErrorMessage('');
     const validationError = validate();
     if (validationError) {
+      setErrorMessage(validationError);
       Alert.alert('Check your details', validationError);
       return;
     }
@@ -101,7 +104,9 @@ export default function RegisterScreen({ navigation }: Props) {
 
       navigation.navigate('VerifyEmail', { email: cleanEmail });
     } catch (err: any) {
-      Alert.alert('Registration failed', err.message ?? 'Something went wrong.');
+      const message = getRegistrationErrorMessage(err);
+      setErrorMessage(message);
+      Alert.alert('Registration failed', message);
     } finally {
       setLoading(false);
     }
@@ -131,16 +136,18 @@ export default function RegisterScreen({ navigation }: Props) {
         <Field
           label="Phone Number (07...)"
           value={phone}
-          onChangeText={setPhone}
+          onChangeText={(value) => setPhone(value.replace(/\D/g, '').slice(0, 19))}
           placeholder="07..."
           keyboardType="phone-pad"
+          maxLength={19}
         />
         <Field
           label="ID Number"
           value={nationalId}
-          onChangeText={setNationalId}
+          onChangeText={(value) => setNationalId(value.replace(/\D/g, '').slice(0, 8))}
           placeholder="Enter your ID number"
           keyboardType="number-pad"
+          maxLength={8}
         />
         <Field
           label="Password"
@@ -160,6 +167,8 @@ export default function RegisterScreen({ navigation }: Props) {
           onToggleSecure={() => setShowConfirmPassword((value) => !value)}
           isSecureVisible={showConfirmPassword}
         />
+
+        {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
 
         <TouchableOpacity
           style={[styles.button, loading && styles.buttonDisabled]}
@@ -183,6 +192,26 @@ export default function RegisterScreen({ navigation }: Props) {
   );
 }
 
+function getRegistrationErrorMessage(error: any): string {
+  const rawMessage = String(error?.message ?? '').trim();
+  const searchableMessage = `${rawMessage} ${error?.details ?? ''}`.toLowerCase();
+  const isDuplicate =
+    error?.code === '23505' ||
+    searchableMessage.includes('already registered') ||
+    searchableMessage.includes('already exists') ||
+    searchableMessage.includes('duplicate') ||
+    searchableMessage.includes('unique constraint') ||
+    searchableMessage.includes('profiles_email_key') ||
+    searchableMessage.includes('profiles_phone_key') ||
+    searchableMessage.includes('profiles_national_id_key');
+
+  if (isDuplicate) {
+    return 'An account with this email, phone number, or ID already exists. Please log in instead.';
+  }
+
+  return rawMessage || 'Something went wrong. Please try again shortly.';
+}
+
 // Small reusable labeled input — kept inline in this file since it's
 // only used by this screen right now. If Verify/Login end up needing
 // the same input style, promote this to src/components/FormField.tsx.
@@ -196,6 +225,7 @@ function Field(props: {
   isSecureVisible?: boolean;
   keyboardType?: 'default' | 'email-address' | 'phone-pad' | 'number-pad';
   autoCapitalize?: 'none' | 'sentences';
+  maxLength?: number;
 }) {
   return (
     <View style={styles.fieldWrap}>
@@ -210,6 +240,7 @@ function Field(props: {
           secureTextEntry={props.secureTextEntry}
           keyboardType={props.keyboardType ?? 'default'}
           autoCapitalize={props.autoCapitalize ?? 'sentences'}
+          maxLength={props.maxLength}
         />
         {props.onToggleSecure ? (
           <TouchableOpacity
@@ -227,30 +258,43 @@ function Field(props: {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.white },
+  screen: { flex: 1, backgroundColor: colors.background },
   content: { paddingBottom: spacing.xl },
   header: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.primaryDark,
     paddingTop: 60,
     paddingBottom: spacing.xl,
     paddingHorizontal: spacing.lg,
-    borderBottomLeftRadius: radius.lg,
-    borderBottomRightRadius: radius.lg,
+    borderBottomRightRadius: 28,
+    borderBottomLeftRadius: 28,
   },
-  headerTitle: { color: colors.white, fontSize: 20, fontWeight: '700' },
-  card: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg },
-  title: { fontSize: 24, fontWeight: '800', color: colors.text },
-  subtitle: { color: colors.textMuted, marginTop: spacing.xs, marginBottom: spacing.lg },
+  headerTitle: { color: colors.white, fontSize: 22, fontWeight: '900', letterSpacing: 0.2 },
+  card: { backgroundColor: colors.white, borderRadius: radius.lg, margin: spacing.md, padding: spacing.lg, shadowColor: colors.primaryDark, shadowOffset: { height: 8, width: 0 }, shadowOpacity: 0.08, shadowRadius: 18, elevation: 3 },
+  title: { color: colors.primaryDark, fontSize: 28, fontWeight: '900' },
+  subtitle: { color: colors.textMuted, fontSize: 14, lineHeight: 21, marginTop: spacing.xs, marginBottom: spacing.lg },
+  errorText: {
+    backgroundColor: '#FFF0F0',
+    borderColor: '#F3B5B5',
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    color: colors.danger,
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
   fieldWrap: { marginBottom: spacing.md },
-  fieldLabel: { fontWeight: '600', color: colors.text, marginBottom: spacing.xs },
+  fieldLabel: { color: colors.primaryDark, fontSize: 13, fontWeight: '800', marginBottom: spacing.xs },
   inputRow: { alignItems: 'center', flexDirection: 'row' },
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: '#FBFDFC',
+    borderColor: '#C8D9CE',
     borderRadius: radius.sm,
     paddingHorizontal: spacing.md,
-    paddingVertical: 12,
+    paddingVertical: 14,
     fontSize: 15,
     color: colors.text,
   },
@@ -263,6 +307,11 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: spacing.md,
+    shadowColor: colors.primary,
+    shadowOffset: { height: 5, width: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 2,
   },
   buttonDisabled: { opacity: 0.6 },
   buttonText: { color: colors.white, fontWeight: '700', fontSize: 16 },

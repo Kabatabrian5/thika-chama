@@ -72,6 +72,11 @@ where things stand in under a minute.
   a wordless animated app splash. It shows the app logo and loading
   indicator, then opens Login automatically after 1.4 seconds.
 
+  Follow-up (2026-09-04): Added visible registration and login errors for
+  web, input limits of 19 phone digits and 8 ID digits, duplicate-account
+  guidance to log in, and stale confirmed-profile recovery. Refined the
+  visual treatment of both auth forms.
+
 - [ ] **Step 4: Edge Functions — mpesa-validation, mpesa-confirmation**
   Daraja C2B webhook handlers. Allocation logic: Fine → Weekly
   (2000 savings + 500 welfare) → Loan → Overdue/Advance. Test via

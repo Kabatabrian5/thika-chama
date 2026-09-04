@@ -32,9 +32,12 @@ export default function LoginScreen({ navigation }: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   async function handleLogin() {
+    setErrorMessage('');
     if (!email || !password) {
+      setErrorMessage('Please enter both email and password.');
       Alert.alert('Missing details', 'Please enter both email and password.');
       return;
     }
@@ -57,7 +60,14 @@ export default function LoginScreen({ navigation }: Props) {
 
       switch (profile.status) {
         case 'PENDING_EMAIL':
-          navigation.navigate('VerifyEmail', { email: email.trim().toLowerCase() });
+          // If password sign-in succeeded, Supabase has already accepted
+          // the email. Recover a stale profile status instead of repeating OTP.
+          const { error: statusUpdateError } = await supabase
+            .from('profiles')
+            .update({ status: 'PENDING_APPROVAL' })
+            .eq('id', authData.user.id);
+          if (statusUpdateError) throw statusUpdateError;
+          navigation.navigate('WaitingApproval');
           break;
         case 'PENDING_APPROVAL':
           navigation.navigate('WaitingApproval');
@@ -79,7 +89,9 @@ export default function LoginScreen({ navigation }: Props) {
           throw new Error(`Unknown profile status: ${profile.status}`);
       }
     } catch (err: any) {
-      Alert.alert('Login failed', err.message ?? 'Please check your email and password.');
+      const message = err.message ?? 'Please check your email and password.';
+      setErrorMessage(message);
+      Alert.alert('Login failed', message);
     } finally {
       setLoading(false);
     }
@@ -137,6 +149,8 @@ export default function LoginScreen({ navigation }: Props) {
             </TouchableOpacity>
           </View>
 
+          {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
+
           <View style={styles.optionsRow}>
             <TouchableOpacity style={styles.rememberOption} onPress={() => setRememberMe((value) => !value)}>
               <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
@@ -171,23 +185,35 @@ export default function LoginScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.background },
-  header: { backgroundColor: colors.primary, paddingTop: 52, paddingBottom: spacing.lg, paddingHorizontal: spacing.lg },
-  headerTitle: { color: colors.white, fontSize: 20, fontWeight: '800' },
+  header: { backgroundColor: colors.primaryDark, borderBottomLeftRadius: 28, borderBottomRightRadius: 28, paddingTop: 52, paddingBottom: spacing.lg, paddingHorizontal: spacing.lg },
+  headerTitle: { color: colors.white, fontSize: 22, fontWeight: '900', letterSpacing: 0.2 },
   content: { alignItems: 'center', flex: 1, justifyContent: 'center', paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
   brandShield: { alignItems: 'center', borderColor: colors.primary, borderRadius: 26, borderWidth: 4, height: 58, justifyContent: 'center', marginBottom: spacing.sm, transform: [{ rotate: '45deg' }], width: 48 },
   brandShieldInner: { alignItems: 'center', transform: [{ rotate: '-45deg' }] },
   brandPeople: { color: colors.primary, fontSize: 16, fontWeight: '900', letterSpacing: -4 },
   brandArc: { color: colors.primary, fontSize: 27, fontWeight: '900', lineHeight: 18, marginTop: -4 },
-  title: { color: colors.text, fontSize: 30, fontWeight: '900', marginTop: spacing.xs },
-  subtitle: { color: colors.text, fontSize: 16, marginTop: spacing.xs, marginBottom: spacing.sm, textAlign: 'center' },
+  title: { color: colors.primaryDark, fontSize: 32, fontWeight: '900', marginTop: spacing.xs },
+  subtitle: { color: colors.textMuted, fontSize: 15, marginTop: spacing.xs, marginBottom: spacing.sm, textAlign: 'center' },
   form: { maxWidth: 480, width: '100%' },
   fieldLabel: { color: colors.text, fontSize: 15, fontWeight: '600', marginBottom: spacing.xs, marginTop: spacing.sm },
-  inputShell: { alignItems: 'center', backgroundColor: colors.white, borderColor: '#B8B8B8', borderRadius: radius.sm, borderWidth: 1, flexDirection: 'row', minHeight: 52, paddingHorizontal: spacing.md },
+  inputShell: { alignItems: 'center', backgroundColor: colors.white, borderColor: '#C8D9CE', borderRadius: radius.sm, borderWidth: 1, flexDirection: 'row', minHeight: 56, paddingHorizontal: spacing.md },
   inputIcon: { color: colors.textMuted, fontSize: 22, fontWeight: '700', marginRight: spacing.sm, width: 24 },
   input: {
     flex: 1,
     fontSize: 16,
     color: colors.text,
+  },
+  errorText: {
+    backgroundColor: '#FFF0F0',
+    borderColor: '#F3B5B5',
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    color: colors.danger,
+    fontSize: 13,
+    lineHeight: 19,
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
   },
   eyeButton: { paddingLeft: spacing.sm },
   eyeIcon: { color: colors.textMuted, fontSize: 12, fontWeight: '700' },
@@ -204,6 +230,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: spacing.md,
+    shadowColor: colors.primary,
+    shadowOffset: { height: 5, width: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 2,
     minHeight: 54,
   },
   buttonDisabled: { opacity: 0.6 },
