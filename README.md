@@ -356,6 +356,11 @@ The repository is connected to the GitHub remote above. Before making the next m
 - Verified with `node_modules/.bin/tsc.cmd --noEmit`.
 - Remaining delivery action: wait for the Supabase email quota or configure custom SMTP before repeating multiple OTP tests.
 
+### 2026-09-04 — Wordless launch splash
+- Replaced the text-heavy signed-out opening route with a short wordless splash showing the app logo and loading indicator.
+- The splash transitions automatically to Login after 1.4 seconds; registration remains available from Login.
+- Verified with `node_modules/.bin/tsc.cmd --noEmit` before the Vercel redeploy.
+
 ### 2026-09-03 — Opening screen
 - Added the branded opening screen for signed-out visitors with the Thika Road Chama Group name, community handshake visual, member count, and login/register actions.
 - Made the opening screen the first route in the existing auth navigator; active sessions still go directly through the existing profile-status gate.

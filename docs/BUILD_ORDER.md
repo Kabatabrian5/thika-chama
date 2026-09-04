@@ -68,6 +68,10 @@ where things stand in under a minute.
   service also allows only two auth emails per hour. Custom SMTP remains
   the delivery fix for repeated development testing.
 
+  Follow-up (2026-09-04): Replaced the signed-out text welcome route with
+  a wordless animated app splash. It shows the app logo and loading
+  indicator, then opens Login automatically after 1.4 seconds.
+
 - [ ] **Step 4: Edge Functions — mpesa-validation, mpesa-confirmation**
   Daraja C2B webhook handlers. Allocation logic: Fine → Weekly
   (2000 savings + 500 welfare) → Loan → Overdue/Advance. Test via
