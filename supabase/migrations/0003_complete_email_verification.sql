@@ -17,6 +17,8 @@ begin
     raise exception 'You must be signed in to complete email verification';
   end if;
 
+  perform set_config('app.email_verification', 'true', true);
+
   update public.profiles
   set status = 'PENDING_APPROVAL'
   where id = auth.uid()

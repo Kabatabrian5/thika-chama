@@ -101,6 +101,13 @@ create or replace function prevent_self_role_escalation()
 returns trigger as $$
 begin
   if (new.role <> old.role or new.status <> old.status) then
+    if current_setting('app.email_verification', true) = 'true'
+      and new.role = old.role
+      and old.status = 'PENDING_EMAIL'
+      and new.status = 'PENDING_APPROVAL' then
+      return new;
+    end if;
+
     if not exists (
       select 1 from profiles p
       where p.id = auth.uid()
