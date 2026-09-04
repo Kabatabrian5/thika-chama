@@ -373,6 +373,12 @@ The repository is connected to the GitHub remote above. Before making the next m
 - Verification now calls the protected `complete_email_verification` RPC for the single allowed `PENDING_EMAIL` to `PENDING_APPROVAL` transition.
 - Added `supabase/migrations/0003_complete_email_verification.sql`; this migration must be run in the live Supabase SQL Editor before testing the confirmation flow again.
 
+### 2026-09-04 — Chairman member management
+- Added protected `manage_member` support in `supabase/migrations/0004_chairman_member_management.sql` for approving, rejecting, or removing accounts.
+- The Members table now shows those actions only to chairman and treasurer profiles; account deletion runs server-side and never exposes the service-role key.
+- For development bootstrap, promote the owner account once in Supabase SQL Editor with `update public.profiles set role = 'chairman', status = 'ACTIVE' where email = 'your-email@example.com';`.
+- Run migrations 0003 and 0004 in Supabase before testing verification and chairman actions.
+
 ### 2026-09-03 — Opening screen
 - Added the branded opening screen for signed-out visitors with the Thika Road Chama Group name, community handshake visual, member count, and login/register actions.
 - Made the opening screen the first route in the existing auth navigator; active sessions still go directly through the existing profile-status gate.

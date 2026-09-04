@@ -2,37 +2,80 @@
  * ============================================================
  * MEMBERS DIRECTORY
  * ============================================================
- * Step 3 provides a read-only directory for authenticated users.
- * It reads only the profile fields needed for the list. Payment
- * status will be added when the contributions table exists.
+ * Provides the member directory for authenticated users. Chairman
+ * and treasurer accounts also receive protected approve, reject,
+ * and remove actions for pending or unwanted registrations.
  * ============================================================
  */
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../lib/supabase';
 import { colors, radius, spacing } from '../../lib/theme';
 
-type Member = { id: string; full_name: string; phone: string; status: string };
+type Member = { id: string; full_name: string; phone: string; status: string; role: string };
 
 export default function MembersScreen() {
   const [members, setMembers] = useState<Member[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState('');
+  const [currentRole, setCurrentRole] = useState('member');
+
+  async function loadMembers(isRefresh = false) {
+    if (isRefresh) setRefreshing(true);
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData.user?.id ?? '';
+    const { data: profile } = userId
+      ? await supabase.from('profiles').select('role').eq('id', userId).single()
+      : { data: null };
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, full_name, phone, status, role')
+      .order('full_name');
+    setMembers(data ?? []);
+    setCurrentUserId(userId);
+    setCurrentRole(profile?.role ?? 'member');
+    setLoading(false);
+    setRefreshing(false);
+  }
 
   useEffect(() => {
     let mounted = true;
 
-    async function loadMembers() {
-      const { data } = await supabase.from('profiles').select('id, full_name, phone, status').order('full_name');
-      if (mounted) {
-        setMembers(data ?? []);
-        setLoading(false);
-      }
-    }
+    loadMembers().finally(() => {
+      if (!mounted) return;
+      setLoading(false);
+    });
 
-    loadMembers();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
+
+  async function manageMember(member: Member, action: 'approve' | 'reject' | 'delete') {
+    const labels = { approve: 'approve', reject: 'reject', delete: 'remove' };
+    Alert.alert(`${labels[action].charAt(0).toUpperCase()}${labels[action].slice(1)} member`, `Are you sure you want to ${labels[action]} ${member.full_name}?`, [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: labels[action].charAt(0).toUpperCase() + labels[action].slice(1),
+        style: action === 'delete' || action === 'reject' ? 'destructive' : 'default',
+        onPress: async () => {
+          const { error } = await supabase.rpc('manage_member', {
+            target_user_id: member.id,
+            action,
+          });
+          if (error) {
+            Alert.alert('Action failed', error.message);
+            return;
+          }
+          await loadMembers(true);
+        },
+      },
+    ]);
+  }
+
+  const canManageMembers = currentRole === 'chairman' || currentRole === 'treasurer';
 
   const filteredMembers = members.filter((member) => member.full_name.toLowerCase().includes(search.toLowerCase()));
 
@@ -49,6 +92,8 @@ export default function MembersScreen() {
         data={filteredMembers}
         keyExtractor={(member) => member.id}
         contentContainerStyle={styles.list}
+        refreshing={refreshing}
+        onRefresh={() => loadMembers(true)}
         ListEmptyComponent={<Text style={styles.empty}>No members match your search.</Text>}
         renderItem={({ item }) => <View style={styles.memberRow}>
           <View style={styles.avatar}><Text style={styles.avatarText}>{item.full_name.charAt(0).toUpperCase()}</Text></View>
@@ -56,7 +101,18 @@ export default function MembersScreen() {
             <Text style={styles.memberName}>{item.full_name}</Text>
             <Text style={styles.memberPhone}>{item.phone}</Text>
           </View>
-          <Text style={[styles.status, item.status === 'ACTIVE' ? styles.active : styles.pending]}>{item.status === 'ACTIVE' ? 'Active' : 'Pending'}</Text>
+          <View style={styles.memberRight}>
+            <Text style={[styles.status, item.status === 'ACTIVE' ? styles.active : styles.pending]}>{item.status === 'ACTIVE' ? 'Active' : item.status === 'REJECTED' ? 'Rejected' : 'Pending'}</Text>
+            {canManageMembers && item.id !== currentUserId ? (
+              <View style={styles.actions}>
+                {item.status === 'PENDING_APPROVAL' ? <>
+                  <TouchableOpacity onPress={() => manageMember(item, 'approve')} style={styles.approveButton}><Text style={styles.actionText}>Approve</Text></TouchableOpacity>
+                  <TouchableOpacity onPress={() => manageMember(item, 'reject')} style={styles.rejectButton}><Text style={styles.actionText}>Reject</Text></TouchableOpacity>
+                </> : null}
+                <TouchableOpacity onPress={() => manageMember(item, 'delete')} style={styles.deleteButton}><Text style={styles.actionText}>Remove</Text></TouchableOpacity>
+              </View>
+            ) : null}
+          </View>
         </View>}
       />}
     </View>
@@ -80,6 +136,12 @@ const styles = StyleSheet.create({
   status: { fontSize: 12, fontWeight: '700' },
   active: { color: colors.success },
   pending: { color: colors.warning },
+  memberRight: { alignItems: 'flex-end', marginLeft: spacing.sm },
+  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, justifyContent: 'flex-end', marginTop: spacing.xs, maxWidth: 190 },
+  approveButton: { backgroundColor: colors.primaryLight, borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 5 },
+  rejectButton: { backgroundColor: '#FFF4E5', borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 5 },
+  deleteButton: { backgroundColor: '#FFF0F0', borderRadius: radius.sm, paddingHorizontal: spacing.sm, paddingVertical: 5 },
+  actionText: { color: colors.primaryDark, fontSize: 11, fontWeight: '800' },
   loader: { marginTop: spacing.xl },
   empty: { color: colors.textMuted, padding: spacing.lg, textAlign: 'center' },
 });

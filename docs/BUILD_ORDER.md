@@ -82,6 +82,11 @@ where things stand in under a minute.
   protected RPC `complete_email_verification`. Migration 0003 must be run
   in Supabase before the live flow can use the repair.
 
+  Follow-up (2026-09-04): Added protected chairman/treasurer member
+  management through `manage_member`, with approve, reject, and remove
+  actions in the Members table. Use a one-time SQL bootstrap to promote
+  the development owner account before testing these controls.
+
 - [ ] **Step 4: Edge Functions — mpesa-validation, mpesa-confirmation**
   Daraja C2B webhook handlers. Allocation logic: Fine → Weekly
   (2000 savings + 500 welfare) → Loan → Overdue/Advance. Test via
