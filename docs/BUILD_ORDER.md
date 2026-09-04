@@ -147,6 +147,10 @@ where things stand in under a minute.
   locally in `ProfileScreen.tsx`. Name/phone save and logout work against
   the current schema; avatar storage, password change, receipts, and
   exports remain pending.
+  Follow-up (2026-09-04): Added Expo ImagePicker integration and private
+  Supabase `avatars` storage with per-user policies in migration 0007.
+  Run migration 0007 before upload testing; native permission changes need
+  a new EAS build.
 
 - [ ] **Step 9: Chairman — Manage Members, Pending Approvals**
 

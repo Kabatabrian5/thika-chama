@@ -9,7 +9,8 @@
  * ============================================================
  */
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../../lib/supabase';
 import { displayPhone, isValidKenyanPhone, normalizePhone } from '../../lib/phone';
 import { colors, radius, spacing } from '../../lib/theme';
@@ -21,6 +22,7 @@ export default function ProfileScreen() {
   const [phone, setPhone] = useState('');
   const [nationalId, setNationalId] = useState('');
   const [role, setRole] = useState('member');
+  const [avatarUrl, setAvatarUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -39,7 +41,7 @@ export default function ProfileScreen() {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, email, phone, national_id, role')
+        .select('id, full_name, email, phone, national_id, role, avatar_url')
         .eq('id', user.id)
         .single();
 
@@ -53,6 +55,12 @@ export default function ProfileScreen() {
         setPhone(displayPhone(data.phone));
         setNationalId(data.national_id);
         setRole(data.role);
+        if (data.avatar_url) {
+          const { data: signedImage } = await supabase.storage
+            .from('avatars')
+            .createSignedUrl(data.avatar_url, 3600);
+          if (signedImage?.signedUrl) setAvatarUrl(signedImage.signedUrl);
+        }
       }
       setLoading(false);
     }
@@ -96,6 +104,57 @@ export default function ProfileScreen() {
     await supabase.auth.signOut();
   }
 
+  async function handlePickPhoto() {
+    setMessage('');
+    setErrorMessage('');
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      setErrorMessage('Photo access is required to choose a profile picture.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.82,
+    });
+    if (result.canceled || !result.assets[0]) return;
+
+    const asset = result.assets[0];
+    setSaving(true);
+    try {
+      const response = await fetch(asset.uri);
+      const imageData = await response.arrayBuffer();
+      const extension = asset.mimeType?.split('/')[1] ?? 'jpg';
+      const objectPath = `${userId}/avatar.${extension}`;
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(objectPath, imageData, {
+          cacheControl: '3600',
+          contentType: asset.mimeType ?? 'image/jpeg',
+          upsert: true,
+        });
+      if (uploadError) throw uploadError;
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: objectPath })
+        .eq('id', userId);
+      if (profileError) throw profileError;
+
+      const { data: signedImage } = await supabase.storage
+        .from('avatars')
+        .createSignedUrl(objectPath, 3600);
+      setAvatarUrl(signedImage?.signedUrl ?? '');
+      setMessage('Your profile photo has been updated.');
+    } catch (error: any) {
+      setErrorMessage(error.message ?? 'Could not upload your profile photo.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
   const initials = fullName.trim().split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'TR';
 
   if (loading) {
@@ -112,8 +171,8 @@ export default function ProfileScreen() {
 
       <View style={styles.brandArea}>
         <Text style={styles.brand}>Thika Road Chama Group</Text>
-        <Pressable accessibilityRole="button" accessibilityLabel="Change profile photo" onPress={() => Alert.alert('Photo upload', 'Profile photo upload will be added with secure storage.') } style={styles.avatarButton}>
-          <View style={styles.avatar}><Text style={styles.avatarText}>{initials}</Text></View>
+        <Pressable accessibilityRole="button" accessibilityLabel="Change profile photo" onPress={handlePickPhoto} style={styles.avatarButton}>
+          <View style={styles.avatar}>{avatarUrl ? <Image source={{ uri: avatarUrl }} style={styles.avatarImage} /> : <Text style={styles.avatarText}>{initials}</Text>}</View>
           <View style={styles.camera}><Text style={styles.cameraText}>●</Text></View>
         </Pressable>
         <Text style={styles.photoHint}>Tap to change photo</Text>
@@ -159,6 +218,7 @@ const styles = StyleSheet.create({
   brand: { color: '#637B6B', fontSize: 15, marginBottom: spacing.md },
   avatarButton: { position: 'relative' },
   avatar: { alignItems: 'center', backgroundColor: '#A7D7AD', borderColor: colors.primary, borderRadius: 76, borderWidth: 4, height: 142, justifyContent: 'center', width: 142 },
+  avatarImage: { borderRadius: 70, height: 134, width: 134 },
   avatarText: { color: colors.primaryDark, fontSize: 42, fontWeight: '900' },
   camera: { alignItems: 'center', backgroundColor: colors.primary, borderColor: colors.white, borderRadius: 25, borderWidth: 4, bottom: 2, height: 50, justifyContent: 'center', position: 'absolute', right: -3, width: 50 },
   cameraText: { color: colors.white, fontSize: 20 },

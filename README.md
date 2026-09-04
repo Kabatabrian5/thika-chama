@@ -471,6 +471,13 @@ The repository is connected to the GitHub remote above. Before making the next m
 - Photo selection/storage remains deferred until the storage and image-picker step.
 - Verified with `node_modules/.bin/tsc.cmd --noEmit`, `npm run build`, and `git diff --check`.
 
+### 2026-09-04 — Profile avatar storage and image picker
+- Installed Expo SDK 57-compatible `expo-image-picker` and configured its permissions through `app.json`.
+- Profile photo selection now crops a square image, uploads it to the private Supabase `avatars` bucket, stores the object path in `profiles.avatar_url`, and displays a one-hour signed URL.
+- Added `supabase/migrations/0007_profile_avatars_storage.sql` with per-user storage policies. Run it in the live Supabase SQL Editor before testing uploads.
+- A new EAS development/preview APK is required for native picker permission changes; the Vercel web preview can use the browser picker after deployment.
+- Verified with `npx expo config --type public`, `node_modules/.bin/tsc.cmd --noEmit`, `npm run build`, and `git diff --check`.
+
 ### 2026-09-03 — Opening screen
 - Added the branded opening screen for signed-out visitors with the Thika Road Chama Group name, community handshake visual, member count, and login/register actions.
 - Made the opening screen the first route in the existing auth navigator; active sessions still go directly through the existing profile-status gate.

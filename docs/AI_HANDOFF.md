@@ -20,6 +20,7 @@
 - Step 4+: pending. Contributions, Daraja webhooks, allocation waterfall, fines, loans, receipts, and role administration are not complete.
 - The Contribute tab now has a local uncommitted reading-mode interface in `ContributeScreen.tsx`; live payment confirmation and receipts are not implemented yet. Loans and Profile still use temporary empty views.
 - The Profile tab now uses `ProfileScreen.tsx`. It loads/saves full name and phone, locks email and national ID, shows role/verification state, and logs out. Avatar upload/storage, password change, receipts, and exports remain deferred.
+- Profile avatar upload is now implemented with SDK 57 `expo-image-picker` and private Supabase Storage bucket `avatars`; `profiles.avatar_url` stores the object path and the app uses signed URLs. Run migration 0007 in Supabase and create a new native EAS build for permission changes before phone testing.
 - Signed-out visitors now land on `WelcomeScreen.tsx`, which links to the existing Login and Register screens.
 - `LoginScreen.tsx` now matches the supplied reference layout with branded header, community mark, field controls, remember-me row, and register footer.
 - Login uses a fixed flex layout rather than a page `ScrollView`; the complete form was verified at `390x844` with no document scrolling.
